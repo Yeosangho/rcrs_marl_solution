@@ -79,7 +79,7 @@ public interface Entity {
    *           If the read fails.
    */
   void read( InputStream in ) throws IOException;
-
+   
   /**
    * Create a copy of this entity.
    *

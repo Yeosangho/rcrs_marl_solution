@@ -72,4 +72,5 @@ public interface WorldModel<T extends Entity> extends Iterable<T> {
        @param changeSet The set of changes to merge into this world model.
     */
     void merge(ChangeSet changeSet);
+
 }

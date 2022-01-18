@@ -19,6 +19,9 @@ public enum ControlMessageURN {
     SK_ACKNOWLEDGE("urn:rescuecore2:messages.control:sk_acknowledge"),
     /** Simulator-Kernel update. */
     SK_UPDATE("urn:rescuecore2:messages.control:sk_update"),
+
+    SK_UPDATE_REWARD("urn:rescuecore2:messages.control:sk_update_reward"),
+
     /** Kernel-Simulator OK. */
     KS_CONNECT_OK("urn:rescuecore2:messages.control:ks_connect_ok"),
     /** Kernel-Simulator error. */
@@ -51,6 +54,7 @@ public enum ControlMessageURN {
     KA_CONNECT_ERROR("urn:rescuecore2:messages.control:ka_connect_error"),
     /** Kernel-Agent perception update. */
     KA_SENSE("urn:rescuecore2:messages.control:ka_sense"),
+    KA_COMMAND("urn:rescuecore2:messages.control:ka_command"),
 
     /** Shutdown message. */
     SHUTDOWN("urn:rescuecore2:messages.control:shutdown"),

@@ -200,6 +200,7 @@ public final class StartKernel {
 				frame.addWindowListener(new WindowAdapter() {
 					public void windowClosing(WindowEvent e) {
 						kernelInfo.kernel.shutdown();
+						//kernelInfo = createKernel(config, showStartupMenu);
 						System.exit(0);
 					}
 				});
@@ -282,7 +283,7 @@ public final class StartKernel {
 		// Create the kernel
 		ScoreGraph graph = new ScoreGraph(score);
 		Kernel kernel = new Kernel(config, perception, comms, worldModel, gis,
-				filter, termination, graph, collector);
+				filter, termination, graph, collector, options);
 		// Create the component manager
 		ComponentManager componentManager = new ComponentManager(kernel,
 				worldModel, config, scenario);
@@ -334,7 +335,7 @@ public final class StartKernel {
 		Thread waitThread = new Thread() {
 			public void run() {
 				try {
-					kernel.componentManager.waitForAllAgents();
+					//kernel.componentManager.waitForAllAgents();
 					kernel.componentManager.waitForAllSimulators();
 					kernel.componentManager.waitForAllViewers();
 				}

@@ -24,7 +24,6 @@ public class SampleCentre extends StandardAgent<Building> {
     return "Sample centre";
   }
 
-
   @Override
   protected void think( int time, ChangeSet changed,
       Collection<Command> heard ) {

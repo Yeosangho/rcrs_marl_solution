@@ -94,10 +94,15 @@ public abstract class GMLMapFormat implements MapFormat {
 
     @Override
     public boolean canRead(File file) throws MapException {
+        System.out.println("canRead!!");
         if (file.isDirectory() || !file.exists()) {
+            System.out.println(file.isDirectory());
+            System.out.println(file.exists());
+            System.out.println("Not exist file``");
             return false;
         }
         if (!file.getName().endsWith(".gml")) {
+            System.out.println("expend name err");
             return false;
         }
         // Check that the XML dialect is correct by looking at the root element.
@@ -106,6 +111,7 @@ public abstract class GMLMapFormat implements MapFormat {
             r = new FileReader(file);
         }
         catch (FileNotFoundException e) {
+            System.out.println("File Not found Exception");
             throw new MapException(e);
         }
         try {

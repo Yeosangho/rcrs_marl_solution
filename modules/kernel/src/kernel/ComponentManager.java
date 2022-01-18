@@ -62,6 +62,7 @@ public class ComponentManager implements ConnectionManagerListener,
 	// Connected simulators
 	private Set<SimulatorAck> simsToAcknowledge;
 	private int nextID;
+	private boolean fireSimStarted = false;
 
 	// Connected viewers
 	private Set<ViewerAck> viewersToAcknowledge;
@@ -73,7 +74,7 @@ public class ComponentManager implements ConnectionManagerListener,
 
 	/** Lock objects. */
 	private final Object agentLock = new Object();
-	private final Object simLock = new Object();
+	public final Object simLock = new Object();
 	private final Object viewerLock = new Object();
 	private final Object idLock = new Object();
 
@@ -183,6 +184,16 @@ public class ComponentManager implements ConnectionManagerListener,
 	}
 
 	/**
+	 * getSimsToAcknoledge 
+	 * 
+	 */
+	public Set<SimulatorAck> getSimsToAcknowledge() {
+		return simsToAcknowledge;
+	}
+	public boolean getFireSimStarted(){
+		return fireSimStarted;
+	}
+	/**
 	 * Wait until all viewers have acknowledged.
 	 * 
 	 * @throws InterruptedException
@@ -236,6 +247,9 @@ public class ComponentManager implements ConnectionManagerListener,
 						&& next.simulatorID == simulatorID
 						&& next.connection == c) {
 					simsToAcknowledge.remove(next);
+					if("firesimulator.FireSimulatorWrapper".equals(next.sim.getName())){
+						fireSimStarted = true;
+					}
 					kernel.addSimulator(next.sim);
 					simLock.notifyAll();
 					return true;

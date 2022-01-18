@@ -7,6 +7,7 @@ import rescuecore2.messages.Message;
 import rescuecore2.messages.control.KSUpdate;
 import rescuecore2.messages.control.KSCommands;
 import rescuecore2.messages.control.SKUpdate;
+import rescuecore2.messages.control.SKUpdateWithReward;
 import rescuecore2.messages.control.SKConnect;
 import rescuecore2.messages.control.SKAcknowledge;
 import rescuecore2.messages.control.KSConnectOK;
@@ -16,6 +17,8 @@ import rescuecore2.messages.control.EntityIDResponse;
 import rescuecore2.worldmodel.Entity;
 import rescuecore2.worldmodel.EntityID;
 import rescuecore2.worldmodel.ChangeSet;
+import rescuecore2.worldmodel.RewardSet;
+
 import rescuecore2.worldmodel.WorldModel;
 import rescuecore2.config.Config;
 import rescuecore2.log.Logger;
@@ -103,8 +106,10 @@ public abstract class AbstractSimulator<T extends WorldModel<? extends Entity>> 
     */
     protected void handleCommands(KSCommands c) {
         ChangeSet changes = new ChangeSet();
-        processCommands(c, changes);
-        send(new SKUpdate(simulatorID, c.getTime(), changes));
+        RewardSet rewards = new RewardSet();
+
+        processCommands(c, changes, rewards);
+        send(new SKUpdateWithReward(simulatorID, c.getTime(), changes, rewards));
     }
 
     /**
@@ -114,7 +119,8 @@ public abstract class AbstractSimulator<T extends WorldModel<? extends Entity>> 
     */
     protected void processCommands(KSCommands c, ChangeSet changes) {
     }
-
+    protected void processCommands(KSCommands c, ChangeSet changes, RewardSet rewards) {
+    }
     /**
        Request some new entity IDs from the kernel.
        @param count The number to request.

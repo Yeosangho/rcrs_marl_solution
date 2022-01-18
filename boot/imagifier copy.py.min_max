@@ -1,0 +1,93 @@
+import torch
+import json
+
+class Imagifier:
+    def __init__(self, h, w, c, state_data_path):
+        torch.cuda.set_device(1)
+
+        featureList = []
+        with open(state_data_path) as f:
+            featureList.extend(json.load(f))
+        featureTensor = torch.Tensor(featureList).cuda()
+        self.featureMax = torch.max(featureTensor, 0)[0]
+        self.featureMin = torch.min(featureTensor, 0)[0]
+
+        t1 = featureTensor - self.featureMin
+        stdFeature = t1 / (self.featureMax+1e-6)
+
+        self.featureGamma = 1
+        self.featureBeta = 0
+        self.featureNum = 3
+        normFeature = stdFeature * self.featureGamma + self.featureBeta
+
+        self.U, self.S, self.V = torch.pca_lowrank(normFeature, q=9, center=True, niter=10)
+
+        pcaFeature = torch.matmul(normFeature, self.V[:, : self.featureNum])
+
+        self.color = 256
+        self.h = h
+        self.w = w
+        self.c = c
+        self.boundMin = torch.Tensor([0,0,0,0]).cuda()
+        self.boundMax = torch.Tensor([self.h-1, self.w-1, self.color-1, self.c -1]).cuda()
+
+        self.pcaMax = torch.max(pcaFeature, 0)[0]
+        self.pcaMin = torch.min(pcaFeature, 0)[0]
+        t1 = pcaFeature - self.pcaMin
+        #t2 = torch.sqrt(self.pcaVar + 1e-6) 
+        normPCA = t1 / (self.pcaMax + 1e-6)
+
+        self.pcaGamma = torch.Tensor([float(self.h)/6, float(self.w)/6, float(self.color)/6, float(self.c)/6]).cuda()
+        self.pcaBeta = torch.Tensor([float(self.h)/2,float(self.w)/2, float(self.color)/2, float(self.c)/2 ]).cuda()
+        stdPCA =  normPCA * self.pcaGamma[:self.featureNum] + self.pcaBeta[:self.featureNum]
+        clippedPCA = torch.max(torch.min(stdPCA, self.boundMax[:self.featureNum]), self.boundMin[:self.featureNum] )  
+        clippedPCA = clippedPCA.long()
+
+        imageTensor = torch.zeros(self.h,self.w).long().cuda()
+        imageTensor[clippedPCA[:,0], clippedPCA[:,1]] = clippedPCA[:,2]
+
+    def transformToImage(self, featureList):
+        featureTensor = torch.Tensor(featureList).cuda()
+        t1 = featureTensor - self.featureMin
+        #t2 = torch.sqrt(self.featureVariance + 1e-6)
+        stdFeature = t1 / (self.featureMax + 1e-6)
+
+        normFeature = stdFeature * self.featureGamma + self.featureBeta
+        pcaFeature = torch.matmul(normFeature, self.V[:, : self.featureNum])
+        t1 = pcaFeature - self.pcaMin
+        #t2 = torch.sqrt(self.pcaVar + 1e-6) 
+        normPCA = t1 / (self.pcaMax + 1e-6)
+        stdPCA =  normPCA * self.pcaGamma[:self.featureNum] + self.pcaBeta[:self.featureNum]
+        clippedPCA = torch.max(torch.min(stdPCA, self.boundMax[:self.featureNum]), self.boundMin[:self.featureNum] )  
+        clippedPCA = clippedPCA.long()
+        #imageTensor = torch.zeros(self.c, self.h,self.w).long().cuda()
+        #imageTensor[clippedPCA[:,3], clippedPCA[:,0], clippedPCA[:,1]] = clippedPCA[:,2]
+        imageTensor = torch.zeros(self.h,self.w).long().cuda()
+        imageTensor[clippedPCA[:,0], clippedPCA[:,1]] = clippedPCA[:,2]
+        return imageTensor
+    def transformToPCA(self, featureList):
+        featureTensor = torch.Tensor(featureList).cuda()
+        t1 = featureTensor - self.featureMin
+        #t2 = torch.sqrt(self.featureVariance + 1e-6)
+        stdFeature = t1 / (self.featureMax + 1e-6)
+
+        normFeature = stdFeature * self.featureGamma + self.featureBeta
+        pcaFeature = torch.matmul(normFeature, self.V[:, : self.featureNum])
+        t1 = pcaFeature - self.pcaMin
+        #t2 = torch.sqrt(self.pcaVar + 1e-6) 
+        normPCA = t1 / (self.pcaMax + 1e-6) 
+        stdPCA =  normPCA * self.pcaGamma[:self.featureNum] + self.pcaBeta[:self.featureNum]
+        clippedPCA = torch.max(torch.min(stdPCA, self.boundMax[:self.featureNum]), self.boundMin[:self.featureNum] )  
+        clippedPCA = clippedPCA.long()
+
+        return clippedPCA
+
+    def normalizeFeatures(self, featureList):
+        featureTensor = torch.Tensor(featureList).cuda()
+        t1 = featureTensor - self.featureMin
+        t2 = torch.sqrt(self.featureMax + 1e-6)
+        stdFeature = t1 / (self.featureMax + 1e-6)
+        normFeature = stdFeature * self.featureGamma + self.featureBeta
+
+        return normFeature
+    

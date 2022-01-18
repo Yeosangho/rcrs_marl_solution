@@ -69,4 +69,5 @@ public class DefaultWorldModel<T extends Entity> extends AbstractWorldModel<T> {
     public final Iterator<T> iterator() {
         return entities.values().iterator();
     }
+
 }

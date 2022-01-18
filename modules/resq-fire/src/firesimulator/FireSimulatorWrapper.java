@@ -1,41 +1,42 @@
 package firesimulator;
 
-import rescuecore2.config.NoSuchConfigOptionException;
-import rescuecore2.worldmodel.Entity;
-import rescuecore2.worldmodel.EntityID;
-import rescuecore2.worldmodel.ChangeSet;
-import rescuecore2.messages.Command;
-import rescuecore2.messages.control.KSUpdate;
-import rescuecore2.messages.control.KSCommands;
-import rescuecore2.log.Logger;
-
-import rescuecore2.standard.messages.AKExtinguish;
-import rescuecore2.standard.components.StandardSimulator;
-import rescuecore2.standard.entities.StandardEntity;
-import rescuecore2.standard.entities.StandardEntityURN;
-
-import firesimulator.world.Hydrant;
-import firesimulator.world.World;
-import firesimulator.world.WorldInfo;
-import firesimulator.world.Refuge;
-import firesimulator.world.FireStation;
-import firesimulator.world.PoliceOffice;
+import firesimulator.gui.*;
+import firesimulator.simulator.ExtinguishRequest;
+import firesimulator.simulator.Simulator;
+import firesimulator.util.Configuration;
 import firesimulator.world.AmbulanceCenter;
+import firesimulator.world.AmbulanceTeam;
 import firesimulator.world.Building;
 import firesimulator.world.Civilian;
 import firesimulator.world.FireBrigade;
-import firesimulator.world.PoliceForce;
-import firesimulator.world.AmbulanceTeam;
-import firesimulator.world.RescueObject;
+import firesimulator.world.FireStation;
+import firesimulator.world.Hydrant;
 import firesimulator.world.MovingObject;
-import firesimulator.simulator.Simulator;
-import firesimulator.simulator.ExtinguishRequest;
-import firesimulator.util.Configuration;
-
+import firesimulator.world.PoliceForce;
+import firesimulator.world.PoliceOffice;
+import firesimulator.world.Refuge;
+import firesimulator.world.RescueObject;
+import firesimulator.world.World;
+import firesimulator.world.WorldInfo;
 import java.util.Collection;
-import firesimulator.gui.*;
 import javax.swing.JComponent;
 import rescuecore2.GUIComponent;
+import rescuecore2.config.NoSuchConfigOptionException;
+import rescuecore2.log.Logger;
+import rescuecore2.messages.Command;
+import rescuecore2.messages.control.KSCommands;
+import rescuecore2.messages.control.KSUpdate;
+import rescuecore2.standard.components.StandardSimulator;
+import rescuecore2.standard.entities.StandardEntity;
+import rescuecore2.standard.entities.StandardEntityURN;
+import rescuecore2.standard.messages.AKExtinguish;
+import rescuecore2.worldmodel.ChangeSet;
+import rescuecore2.worldmodel.Entity;
+import rescuecore2.worldmodel.EntityID;
+import rescuecore2.worldmodel.RewardSet;
+
+
+
 
 /**
    A rescuecore2 Simulator that wraps the ResQ Freiburg fire simulator.
@@ -46,7 +47,7 @@ public class FireSimulatorWrapper extends StandardSimulator implements GUICompon
     private Simulator sim;
     private World world;
     private FireSimulatorGUI fireSimulatorGUI = null;
-
+    private int count = 0;
 	@Override
 	public JComponent getGUIComponent() {
 		if(fireSimulatorGUI == null) {
@@ -86,7 +87,7 @@ public class FireSimulatorWrapper extends StandardSimulator implements GUICompon
             }
         }
         sim.initialize();
-	
+        System.out.println("Initialize Fire Sims");
 		
 	
     }
@@ -128,7 +129,126 @@ public class FireSimulatorWrapper extends StandardSimulator implements GUICompon
             }
         }
     }
+    @Override
+    protected void processCommands(KSCommands c, ChangeSet changes, RewardSet rewards) {
+        long start = System.currentTimeMillis();
+        for (Command next : c.getCommands()) {
+            if (next instanceof AKExtinguish) {
+                AKExtinguish ex = (AKExtinguish)next;
+                EntityID agentID = ex.getAgentID();
+                EntityID targetID = ex.getTarget();
+                int water = ex.getWater();
+                FireBrigade source = (FireBrigade)world.getObject(agentID.getValue());
+                Building target = (Building)world.getObject(targetID.getValue());
+                ExtinguishRequest req = new ExtinguishRequest(source, target, water);
+                world.addExtinguishRequest(req);
+            }
+        }
+        sim.step(c.getTime(), rewards);
+        if((c.getTime()-1) % config.getIntValue("episode.length") == 0 ){
+            System.out.println("Fire simulation : "+ c.getTime() + ": "+ count);
+            int episodeNum = (int)(c.getTime()) / config.getIntValue("episode.length") ;
+            System.out.println("EP NUM########################## : " + episodeNum);
+            sim.reset(episodeNum);
+            /**
+            model.index(); 
+            Configuration config2 = new Configuration();
+            config2.initialize();
+            for (String next : config2.getPropertyNames()) {
+                try {
+                    String value = config.getValue(next);
+                    Configuration.setProperty(next, value, true);
+                    Logger.debug("Setting '" + next + "' to '" + value + "'");
+                }
+                catch (NoSuchConfigOptionException e) {
+                    // Ignore
+                    Logger.debug("Ignoring property " + next);
+                }
+            }
+            world = new World();
+            sim = new Simulator(world);
+            // Map each entity to a fire simulator object
+            for (Entity next : model) {
+                RescueObject r = mapEntity(next);
+                if (r != null) {
+                    world.putObject(r);
+                }
+            }
+            sim.initialize();
+            for (StandardEntity next : model.getEntitiesOfType(StandardEntityURN.FIRE_BRIGADE)) {
+                rescuecore2.standard.entities.FireBrigade fb = (rescuecore2.standard.entities.FireBrigade)next;
+                fb.setWater(config.getIntValue(MAX_WATER_KEY));
+                changes.addChange(fb, fb.getWaterProperty());
+            }
+            */       
+            System.out.println("Initialize Fire Sims");  
 
+
+            for (Object next : world.getBuildings()) {
+                Building b = (Building)next;
+                rescuecore2.standard.entities.Building oldB = (rescuecore2.standard.entities.Building)model.getEntity(new EntityID(b.getID()));
+                b.setFieryness(0);
+                oldB.setFieryness(0);
+                changes.addChange(oldB, oldB.getFierynessProperty());
+ 
+                b.setEnergy(0.0);
+                oldB.setTemperature(0);
+                changes.addChange(oldB, oldB.getTemperatureProperty());
+
+                oldB.setIgnition(false);   
+                changes.addChange(oldB, oldB.getIgnitionProperty());
+             
+            }     
+        }
+        else{
+
+            // Get changes
+            for (Object next : world.getBuildings()) {
+                Building b = (Building)next;
+                rescuecore2.standard.entities.Building oldB = (rescuecore2.standard.entities.Building)model.getEntity(new EntityID(b.getID()));
+                if ((!oldB.isFierynessDefined()) || (oldB.getFieryness() != b.getFieryness())) {
+                    oldB.setFieryness(b.getFieryness());
+                    changes.addChange(oldB, oldB.getFierynessProperty());
+                }
+                if ((!oldB.isTemperatureDefined()) || (oldB.getTemperature() != (int)b.getTemperature())) {
+                    oldB.setTemperature((int)b.getTemperature());
+                    changes.addChange(oldB, oldB.getTemperatureProperty());
+                }
+            }
+    
+    
+    
+            for (Object next : world.getFirebrigades()) {
+                FireBrigade fb = (FireBrigade)next;
+                //            Logger.debug("Updating water for " + fb);
+                //            Logger.debug(fb.hasChanged() ? "Changed" : "Unchanged");
+                //            if (fb.hasChanged()) {
+                    rescuecore2.standard.entities.FireBrigade oldFB = (rescuecore2.standard.entities.FireBrigade)model.getEntity(new EntityID(fb.getID()));
+                    //                Logger.debug("Old water: " + oldFB.getWaterProperty());
+                    //                Logger.debug("New water: " + fb.getWaterQuantity());
+                    if ((!oldFB.isWaterDefined()) || (oldFB.getWater() != fb.getWaterQuantity())) {
+                        oldFB.setWater(fb.getWaterQuantity());
+                        changes.addChange(oldFB, oldFB.getWaterProperty());
+                    }
+                    //            }
+            }
+        }
+        if (c.getTime() == 1) {
+            // Set initial water quantity for all fire brigades
+            for (StandardEntity next : model.getEntitiesOfType(StandardEntityURN.FIRE_BRIGADE)) {
+                rescuecore2.standard.entities.FireBrigade fb = (rescuecore2.standard.entities.FireBrigade)next;
+                fb.setWater(config.getIntValue(MAX_WATER_KEY));
+                changes.addChange(fb, fb.getWaterProperty());
+            }
+        }
+        count++;
+        long end = System.currentTimeMillis();
+        Logger.info("Time " + c.getTime() + " took " + (end - start) + "ms");
+		
+		if(fireSimulatorGUI != null) {
+			fireSimulatorGUI.refresh();
+		}    
+    }
     @Override
     protected void processCommands(KSCommands c, ChangeSet changes) {
         long start = System.currentTimeMillis();
@@ -144,6 +264,12 @@ public class FireSimulatorWrapper extends StandardSimulator implements GUICompon
                 world.addExtinguishRequest(req);
             }
         }
+        if((c.getTime()-1) % config.getIntValue("episode.length") == 0){
+            System.out.println("Fire simulation : "+ c.getTime() + ": "+ count);
+            int episodeNum = (int)(c.getTime()) / config.getIntValue("episode.length") ;
+            sim.reset(episodeNum);
+        }
+        count++;
         sim.step(c.getTime());
         // Get changes
         for (Object next : world.getBuildings()) {
@@ -158,6 +284,9 @@ public class FireSimulatorWrapper extends StandardSimulator implements GUICompon
                 changes.addChange(oldB, oldB.getTemperatureProperty());
             }
         }
+
+
+
         for (Object next : world.getFirebrigades()) {
             FireBrigade fb = (FireBrigade)next;
             //            Logger.debug("Updating water for " + fb);

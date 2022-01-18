@@ -465,14 +465,15 @@ public class TrafficAgent {
 			}
 			TrafficArea newArea = manager.findArea(x, y);
 
-			if (newArea == null) {
-				Logger.warn(getHuman() + "moved outside area: " + this);
-				return;
-			}
+			//if (newArea == null) {
+			//	Logger.warn(getHuman() + "moved outside area: " + this);
+			//	return;
+			//}
 
 			currentArea = newArea;
 			findBlockingLines();
-			currentArea.addAgent(this);
+			if(currentArea != null)
+				currentArea.addAgent(this);
 		}
 		// Check current destination
 		if (currentPathElement != null) {

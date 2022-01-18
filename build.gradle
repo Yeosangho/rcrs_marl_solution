@@ -379,3 +379,12 @@ task osm2gml(type: JavaExec) {
   main = 'maps.convert.Convert'
   maxHeapSize = '2048m'
 }
+
+
+/* Converter OSM to GML */
+task osm(type: JavaExec) {
+  classpath = files('supplement')
+  classpath += sourceSets.main.runtimeClasspath
+  main = 'maps.convert.OSMMapExtractor'
+  maxHeapSize = '2048m'
+}

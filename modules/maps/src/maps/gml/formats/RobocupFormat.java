@@ -95,6 +95,7 @@ public final class RobocupFormat extends GMLMapFormat {
 
     @Override
     public boolean isCorrectRootElement(String uri, String localName) {
+        System.out.println("isCorrectRootElement!!");
         return RCR_NAMESPACE_URI.equals(uri) && "map".equals(localName);
     }
 
@@ -171,11 +172,19 @@ public final class RobocupFormat extends GMLMapFormat {
             Element nodeList = (Element)next;
             for (Object nextNode : nodeList.elements(Common.GML_NODE_QNAME)) {
                 Element e = (Element)nextNode;
+                
                 int id = readID(e);
                 String coordinates = readNodeCoordinates(e);
                 GMLCoordinates c = new GMLCoordinates(coordinates);
+                if(Double.isNaN(c.getX()) || Double.isNaN(c.getY())){
+                    System.out.println("coordination : " + c.getX() + ":" + c.getY() + coordinates);
+                    System.out.println("element e" + e + "id :" + id);
+                    c = new GMLCoordinates(0.0, 0.0);
+                }
+                
                 GMLNode node = new GMLNode(id, c);
                 result.addNode(node);
+                
             }
         }
         Logger.debug("Read " + result.getNodes().size() + " nodes");
@@ -190,12 +199,16 @@ public final class RobocupFormat extends GMLMapFormat {
                 int id = readID(e);
                 int startID = -1;
                 int endID = -1;
+                //System.out.println(id);
                 for (Object directedNode : e.elements(Common.GML_DIRECTED_NODE_QNAME)) {
                     Element directedNodeElement = (Element)directedNode;
+                    //int id2 = readID(directedNodeElement);
                     if ("-".equals(directedNodeElement.attributeValue(Common.GML_ORIENTATION_QNAME))) {
                         if (startID != -1) {
                             throw new MapException("Edge has multiple start nodes: " + e);
                         }
+                        //System.out.println("in for ::" + id2);
+
                         startID = readHref(directedNodeElement, "start node");
                     }
                     if ("+".equals(directedNodeElement.attributeValue(Common.GML_ORIENTATION_QNAME))) {
@@ -205,8 +218,10 @@ public final class RobocupFormat extends GMLMapFormat {
                         endID = readHref(directedNodeElement, "end node");
                     }
                 }
-                GMLEdge edge = new GMLEdge(id, result.getNode(startID), result.getNode(endID), false);
-                result.addEdge(edge);
+                if((result.getNode(startID) != null) && (result.getNode(endID) != null)){
+                    GMLEdge edge = new GMLEdge(id, result.getNode(startID), result.getNode(endID), false);
+                    result.addEdge(edge);
+                }
             }
         }
         Logger.debug("Read " + result.getEdges().size() + " edges");

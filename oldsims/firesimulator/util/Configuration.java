@@ -118,7 +118,10 @@ public class Configuration {
 		Props.add(new Prop(PREFIX + "wind_direction","wind_direction",null,null,true,null));
 		Props.add(new Prop(PREFIX + "wind_random","wind_random",null,null,true,null));
 		Props.add(new Prop(PREFIX + "randomseed","randomseed",null,null,true,null));
+
 		Props.add(new Prop("random.seed","random.seed",null,null,true,null));
+		Props.add(new Prop("episode.length", "episode.length", null, null, true, null));
+		
 		Props.add(new Prop(PREFIX + "refuge_inflammable","refuge_inflammable",null,null,true,null));
 		Props.add(new Prop(PREFIX + "fire_station_inflammable","firestation_inflammable",null,null,true,null));
 		Props.add(new Prop(PREFIX + "police_office_inflammable","policeoffice_inflammable",null,null,true,null));

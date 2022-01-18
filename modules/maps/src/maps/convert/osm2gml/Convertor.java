@@ -37,11 +37,11 @@ public class Convertor {
     public GMLMap convert(OSMMap map) {
         GMLMap gmlMap = new GMLMap();
 
-        JFrame frame = new JFrame("OSM to GML converter");
-        JPanel main = new JPanel(new BorderLayout());
-        JComponent top = Box.createVerticalBox();
-        top.add(new JLabel("Converting OSM map with " + map.getRoads().size() + " roads and " + map.getBuildings().size() + " buildings"));
-        top.add(new JLabel("Map size: " + (map.getMaxLongitude() - map.getMinLongitude()) + " x " + (map.getMaxLatitude() - map.getMinLatitude())));
+        //JFrame frame = new JFrame("OSM to GML converter");
+        //JPanel main = new JPanel(new BorderLayout());
+        //JComponent top = Box.createVerticalBox();
+        //top.add(new JLabel("Converting OSM map with " + map.getRoads().size() + " roads and " + map.getBuildings().size() + " buildings"));
+        //top.add(new JLabel("Map size: " + (map.getMaxLongitude() - map.getMinLongitude()) + " x " + (map.getMaxLatitude() - map.getMinLatitude())));
         GridBagLayout layout = new GridBagLayout();
         GridBagConstraints c = new GridBagConstraints();
         c.gridx = 0;
@@ -63,10 +63,12 @@ public class Convertor {
         addStep(new CleanOSMStep(temp), steps, progress, layout, c);
         addStep(new ScanOSMStep(temp), steps, progress, layout, c);
         addStep(new MakeTempObjectsStep(temp), steps, progress, layout, c);
-        addStep(new SplitIntersectingEdgesStep(temp), steps, progress, layout, c);
-        addStep(new SplitShapesStep(temp), steps, progress, layout, c);
-        addStep(new RemoveShapesStep(temp), steps, progress, layout, c);
-        addStep(new MergeShapesStep(temp), steps, progress, layout, c);
+
+        //addStep(new SplitIntersectingEdgesStep(temp), steps, progress, layout, c);
+        //addStep(new SplitShapesStep(temp), steps, progress, layout, c);
+        //addStep(new RemoveShapesStep(temp), steps, progress, layout, c);
+        //addStep(new MergeShapesStep(temp), steps, progress, layout, c);
+        
         addStep(new ComputePassableEdgesStep(temp), steps, progress, layout, c);
         /*
         addStep(new CreateBuildingsStep(temp, ConvertTools.sizeOf1Metre(osmMap), random), steps, progress, layout, c);
@@ -75,14 +77,15 @@ public class Convertor {
         */
         addStep(new MakeObjectsStep(temp, gmlMap), steps, progress, layout, c);
 
-        main.add(top);
-        main.add(progress);
+        //main.add(top);
+        //main.add(progress);
 
-        frame.setContentPane(main);
-        frame.pack();
-        frame.setVisible(true);
-
+        //frame.setContentPane(main);
+        //frame.pack();
+        //frame.setVisible(false);
+        System.out.println("1");
         for (ConvertStep next : steps) {
+            System.out.println("dostep2");
             next.doStep();
         }
 
@@ -97,18 +100,18 @@ public class Convertor {
         c.gridx = 0;
         c.weightx = 1;
         layout.setConstraints(title, c);
-        panel.add(title);
+        //panel.add(title);
         c.gridx = 1;
         c.weightx = 0;
         layout.setConstraints(progress, c);
-        panel.add(progress);
+        //panel.add(progress);
         c.gridx = 2;
         c.weightx = 1;
         layout.setConstraints(status, c);
-        panel.add(status);
+        //panel.add(status);
         ++c.gridy;
-        progress.setPreferredSize(new Dimension(PROGRESS_WIDTH, PROGRESS_HEIGHT));
-        status.setPreferredSize(new Dimension(STATUS_WIDTH, STATUS_HEIGHT));
+        //progress.setPreferredSize(new Dimension(PROGRESS_WIDTH, PROGRESS_HEIGHT));
+        //status.setPreferredSize(new Dimension(STATUS_WIDTH, STATUS_HEIGHT));
 
         steps.add(step);
     }

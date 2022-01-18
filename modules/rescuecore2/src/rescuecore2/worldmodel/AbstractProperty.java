@@ -4,10 +4,10 @@ package rescuecore2.worldmodel;
    Abstract base class for Property implementations.
 */
 public abstract class AbstractProperty implements Property {
-    private boolean defined;
-    private final String urn;
+    transient private boolean defined;
+    transient private final String urn;
     // CHECKSTYLE:OFF:IllegalType
-    private AbstractEntity entity;
+    transient private AbstractEntity entity;
     // CHECKSTYLE:ON:IllegalType
 
     /**

@@ -9,10 +9,12 @@ rm -f $LOGDIR/*.log
 sh kill.sh
 
 # startGIS
-startKernel --nomenu
-startSims
-startViewer
-startViewerEventLogger
+#--nomenu need auto added agent
+#startKernel --nomenu --autorun  --nogui
+startKernel --nomenu --autorun --nogui
+#startSims
+#startViewer
+#startViewerEventLogger
 
 echo "Start your agents"
 waitFor $LOGDIR/kernel.log "Kernel has shut down" 30

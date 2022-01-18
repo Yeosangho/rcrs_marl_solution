@@ -8,12 +8,12 @@ import rescuecore2.Timestep;
 
 import java.util.Map;
 import java.util.EnumMap;
-
+import java.util.ArrayList;
 import rescuecore2.standard.entities.Building;
 import rescuecore2.standard.entities.StandardEntityConstants;
 
 /**
-   Score function that measures the amount of damage done to buildings by fire.
+ * Score function that measures the amount of damage done to buildings by fire.
  */
 public class BuildingDamageScoreFunction extends AbstractScoreFunction {
     private static final String HEATING_FACTOR = "score.standard.building-fire.heating";
@@ -30,10 +30,11 @@ public class BuildingDamageScoreFunction extends AbstractScoreFunction {
     private boolean absolute;
 
     /**
-       Construct a BuildingDamageScoreFunction.
-    */
+     * Construct a BuildingDamageScoreFunction.
+     */
     public BuildingDamageScoreFunction() {
         super("Building damage");
+
     }
 
     @Override
@@ -57,7 +58,7 @@ public class BuildingDamageScoreFunction extends AbstractScoreFunction {
         double max = 0;
         for (Entity next : world) {
             if (next instanceof Building) {
-                Building b = (Building)next;
+                Building b = (Building) next;
                 if (!b.isTotalAreaDefined()) {
                     continue;
                 }
@@ -67,19 +68,48 @@ public class BuildingDamageScoreFunction extends AbstractScoreFunction {
                 double factor;
                 if (fire == null) {
                     factor = 1;
-                }
-                else {
+                } else {
                     factor = factors.get(fire);
                 }
                 sum += area * factor;
                 max += area;
             }
         }
+
         if (absolute) {
             return sum;
-        }
-        else {
+        } else {
             return sum / max;
         }
+
     }
+
+    public ArrayList<Double> score_abs_rel(WorldModel<? extends Entity> world, Timestep timestep) {
+        double sum = 0;
+        double max = 0;
+        ArrayList<Double> scores = new ArrayList<Double>();
+        for (Entity next : world) {
+            if (next instanceof Building) {
+                Building b = (Building) next;
+                if (!b.isTotalAreaDefined()) {
+                    continue;
+                }
+                int importance = b.isImportanceDefined() ? b.getImportance() : 1;
+                double area = b.getTotalArea() * importance;
+                StandardEntityConstants.Fieryness fire = b.getFierynessEnum();
+                double factor;
+                if (fire == null) {
+                    factor = 1;
+                } else {
+                    factor = factors.get(fire);
+                }
+                sum += area * factor;
+                max += area;
+            }
+        }
+        scores.add(sum);
+        scores.add(sum / max);
+        return scores;
+    }
+
 }

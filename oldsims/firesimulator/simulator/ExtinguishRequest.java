@@ -102,10 +102,11 @@ public class ExtinguishRequest {
 		    verbose("ERROR reason = "+getReason(result)+"\n");
 		    return false;
 		}
-		if(source!=null){
-			source.addWaterUsed(quantity);
-			source.setWaterQuantity(source.getWaterQuantity()-quantity);		
-		}
+		//skip water reduction
+		//if(source!=null){
+		//	source.addWaterUsed(quantity);
+		//	source.setWaterQuantity(source.getWaterQuantity()-quantity);		
+		//}
 		target.setWaterQuantity(target.getWaterQuantity()+quantity);
 		verbose("OK reason = "+getReason(result)+"\n");
 		return true;
@@ -113,6 +114,10 @@ public class ExtinguishRequest {
 
 	public FireBrigade getSource() {
 		return source;
+	}
+
+	public Building getTarget(){
+		return target;
 	}
 	
 	public String toString(){

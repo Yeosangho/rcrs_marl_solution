@@ -37,6 +37,8 @@ public final class ControlMessageFactory extends
 			return new SKAcknowledge(data);
 		case SK_UPDATE:
 			return new SKUpdate(data);
+		case SK_UPDATE_REWARD:
+			return new SKUpdateWithReward(data);
 		case KS_CONNECT_OK:
 			return new KSConnectOK(data);
 		case KS_CONNECT_ERROR:
@@ -67,6 +69,8 @@ public final class ControlMessageFactory extends
 			return new KAConnectError(data);
 		case KA_SENSE:
 			return new KASense(data);
+		case KA_COMMAND:
+			return new KACommand(data);
 		case SHUTDOWN:
 			return new Shutdown(data);
 		case ENTITY_ID_REQUEST:

@@ -6,6 +6,8 @@ import rescuecore2.connection.ConnectionException;
 import rescuecore2.messages.Message;
 import rescuecore2.messages.Command;
 import rescuecore2.messages.control.KASense;
+import rescuecore2.messages.control.KACommand;
+
 import rescuecore2.messages.control.AKConnect;
 import rescuecore2.messages.control.AKAcknowledge;
 import rescuecore2.messages.control.KAConnectOK;
@@ -82,6 +84,9 @@ public abstract class AbstractAgent<T extends WorldModel<? extends Entity>, E ex
        @param heard The set of communication messages this agent heard.
      */
     protected abstract void think(int time, ChangeSet changes, Collection<Command> heard);
+    protected void think(int time, ChangeSet changes, Collection<Command> heard, EntityID id, String command){
+
+    }
 
     /**
        Process an incoming sense message. The default implementation updates the world model and calls {@link #think}. Subclasses should generally not override this method but instead implement the {@link #think} method.
@@ -93,6 +98,11 @@ public abstract class AbstractAgent<T extends WorldModel<? extends Entity>, E ex
         think(sense.getTime(), sense.getChangeSet(), heard);
     }
 
+    protected void processSense(KACommand command) {
+        model.merge(command.getChangeSet());
+        Collection<Command> heard = command.getHearing();
+        think(command.getTime(), command.getChangeSet(), heard, command.getBuildingID(), command.getCommand());
+    }
     /**
        Get the entity controlled by this agent.
        @return The entity controlled by this agent.
@@ -110,11 +120,19 @@ public abstract class AbstractAgent<T extends WorldModel<? extends Entity>, E ex
 
     @Override
     protected void processMessage(Message msg) {
+        /*
         if (msg instanceof KASense) {
             KASense sense = (KASense)msg;
             if (entityID.equals(sense.getAgentID())) {
                 processSense(sense);
             }
+        }
+        */
+        if (msg instanceof KACommand) {
+            KACommand command = (KACommand) msg;
+            if (entityID.equals(command.getAgentID())) {
+                processSense(command);
+            }        
         }
         else {
             super.processMessage(msg);

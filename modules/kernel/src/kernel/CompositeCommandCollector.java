@@ -49,18 +49,26 @@ public class CompositeCommandCollector implements CommandCollector {
         for (CommandCollector next : children) {
             futures.add(service.submit(new ChildCommandsFetcher(next, agents, timestep)));
         }
+        long beforeTime = 0;
         try {
+
             for (int i = 0; i < children.size(); ++i) {
                 try {
+                    beforeTime = System.currentTimeMillis();
+
                     result = service.take().get();
+                    long afterTime = System.currentTimeMillis();
+                    System.out.println("execution time for compositecommandcollect getagentcommands : " + (afterTime-beforeTime));  
                     break;
                 }
                 catch (ExecutionException e) {
                     Logger.error("Error while getting agent commands", e);
                 }
             }
+
         }
         finally {
+ 
             for (Future<Collection<Command>> next : futures) {
                 next.cancel(true);
             }

@@ -30,7 +30,7 @@ import java.util.Set;
    A ScoreFunction that also provides a JTable for viewing the components of the score.
  */
 public class ScoreTable extends DelegatingScoreFunction implements GUIComponent {
-    private ScoreModel model;
+    public ScoreModel model;
 
     /**
        Construct a ScoreTable that wraps a child score function.
@@ -89,11 +89,11 @@ public class ScoreTable extends DelegatingScoreFunction implements GUIComponent 
         }
     }
 
-    private static class ScoreModel {
+    public static class ScoreModel {
         ScoreTableModel table;
         ScoreListModel list;
         private int steps;
-        private List<ScoreFunctionEntry> entries;
+        public List<ScoreFunctionEntry> entries;
 
         ScoreModel(ScoreFunction root) {
             steps = 0;
@@ -162,7 +162,7 @@ public class ScoreTable extends DelegatingScoreFunction implements GUIComponent 
             }
         }
 
-        private static class ScoreFunctionEntry {
+        public static class ScoreFunctionEntry {
             private ScoreFunction function;
             private String prefix;
             private Map<Integer, Double> scores;

@@ -24,6 +24,7 @@ import rescuecore2.worldmodel.Entity;
 import rescuecore2.worldmodel.EntityID;
 import rescuecore2.worldmodel.EntityListener;
 import rescuecore2.worldmodel.Property;
+import rescuecore2.worldmodel.RewardSet;
 import rescuecore2.worldmodel.ChangeSet;
 import rescuecore2.log.Logger;
 
@@ -108,9 +109,35 @@ public class MiscSimulator extends StandardSimulator implements GUIComponent {
         HumanAttributes ha = new HumanAttributes( human, config );
         humans.put( ha.getID(), ha );
       }
+
+      //***randomly set human hp
     }
   }
+  @Override
+  protected void processCommands(KSCommands c, ChangeSet changes, RewardSet rewards) {
+    long start = System.currentTimeMillis();
+    int time = c.getTime();
+    Logger.info( "Timestep " + time );
 
+    for ( Command com : c.getCommands() ) {
+
+      if ( checkValidity( com ) ) {
+        if ( com instanceof AKRescue ) {
+          Human human = (Human) ( model
+              .getEntity( ( (AKRescue) com ).getTarget() ) );
+          handleRescue( human, changes );
+        }
+        /*
+         * For the implementation of Refuge Bed Capacity
+         **/
+        if ( com instanceof AKUnload ) {
+          handleUnload( com, changes );
+        }
+      } else {
+        Logger.debug( "Ignoring " + com );
+      }  
+    }
+  }
 
   @Override
   protected void processCommands( KSCommands c, ChangeSet changes ) {
@@ -136,7 +163,10 @@ public class MiscSimulator extends StandardSimulator implements GUIComponent {
         Logger.debug( "Ignoring " + com );
       }
     }
-
+    //if(count % 10 == 0){
+    //postConnect();
+    //}
+    
     updateRefuges();
 
     processBrokenBuildings( changes );

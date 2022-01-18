@@ -8,9 +8,10 @@ processArgs $*
 rm -f $LOGDIR/*.log
 
 # startGIS
-startKernel --nomenu --autorun
-startSims
-startViewer
+#--nomenu need auto added agent
+#startKernel --nomenu --autorun --nogui
+#startSims
+#startViewer
 
 echo "Start your agents"
 waitFor $LOGDIR/kernel.log "Kernel has shut down" 30

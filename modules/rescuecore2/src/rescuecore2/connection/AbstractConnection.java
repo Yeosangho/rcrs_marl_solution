@@ -21,7 +21,7 @@ import java.io.InputStream;
 import java.io.IOException;
 
 /**
-   Abstract base class for Connection implementations.
+ * Abstract base class for Connection implementations.
  */
 public abstract class AbstractConnection implements Connection {
     private static final int BROADCAST_WAIT = 10000;
@@ -39,8 +39,8 @@ public abstract class AbstractConnection implements Connection {
     private final Object stateLock = new Object();
 
     /**
-       Construct an abstract connection.
-    */
+     * Construct an abstract connection.
+     */
     protected AbstractConnection() {
         listeners = new ArrayList<ConnectionListener>();
         toSend = new LinkedList<Message>();
@@ -66,8 +66,7 @@ public abstract class AbstractConnection implements Connection {
                     broadcast.start();
                     startupImpl();
                     state = State.STARTED;
-                }
-                finally {
+                } finally {
                     Registry.setCurrentRegistry(old);
                 }
             }
@@ -80,8 +79,7 @@ public abstract class AbstractConnection implements Connection {
             if (state == State.STARTED) {
                 try {
                     broadcast.kill();
-                }
-                catch (InterruptedException e) {
+                } catch (InterruptedException e) {
                     Logger.error("AbstractConnection interrupted while shutting down broadcast thread", e);
                 }
                 shutdownImpl();
@@ -149,8 +147,7 @@ public abstract class AbstractConnection implements Connection {
                 ByteLogger.log(out.toByteArray());
             }
             sendBytes(out.toByteArray());
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             throw new ConnectionException(e);
         }
     }
@@ -184,26 +181,29 @@ public abstract class AbstractConnection implements Connection {
     }
 
     /**
-       Send some bytes to the other end of the connection.
-       @param b The bytes to send.
-       @throws IOException If the data cannot be sent.
-    */
+     * Send some bytes to the other end of the connection.
+     * 
+     * @param b The bytes to send.
+     * @throws IOException If the data cannot be sent.
+     */
     protected abstract void sendBytes(byte[] b) throws IOException;
 
     /**
-       Perform startup actions. This will only ever be called once.
-    */
+     * Perform startup actions. This will only ever be called once.
+     */
     protected abstract void startupImpl();
 
     /**
-       Perform shutdown actions. This will only ever be called once.
-    */
+     * Perform shutdown actions. This will only ever be called once.
+     */
     protected abstract void shutdownImpl();
 
     /**
-       Process some bytes that were received. The default implementation will use the Registry to decode all messages in the buffer and send them to listeners.
-       @param b The received bytes.
-    */
+     * Process some bytes that were received. The default implementation will use
+     * the Registry to decode all messages in the buffer and send them to listeners.
+     * 
+     * @param b The received bytes.
+     */
     protected void bytesReceived(byte[] b) {
         InputStream decode = new ByteArrayInputStream(b);
         Message m = null;
@@ -214,8 +214,7 @@ public abstract class AbstractConnection implements Connection {
                     fireMessageReceived(m);
                 }
             } while (m != null);
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             Logger.error("AbstractConnection error reading message", e);
             ByteLogger.log(b, this.toString());
         }
@@ -224,8 +223,7 @@ public abstract class AbstractConnection implements Connection {
             Logger.error("AbstractConnection error reading message", e);
             ByteLogger.log(b, this.toString());
             throw e;
-        }
-        catch (Error e) {
+        } catch (Error e) {
             Logger.error("AbstractConnection error reading message", e);
             ByteLogger.log(b, this.toString());
             throw e;
@@ -234,9 +232,10 @@ public abstract class AbstractConnection implements Connection {
     }
 
     /**
-       Fire a messageReceived event to all registered listeners.
-       @param m The message that was received.
-    */
+     * Fire a messageReceived event to all registered listeners.
+     * 
+     * @param m The message that was received.
+     */
     protected void fireMessageReceived(Message m) {
         synchronized (toSend) {
             toSend.add(m);
@@ -245,19 +244,17 @@ public abstract class AbstractConnection implements Connection {
     }
 
     /**
-       The state of this connection: either not yet started, started or shut down.
-    */
+     * The state of this connection: either not yet started, started or shut down.
+     */
     protected enum State {
         /** CHECKSTYLE:OFF:JavadocVariableCheck. */
-        NOT_STARTED,
-        STARTED,
-        SHUTDOWN;
+        NOT_STARTED, STARTED, SHUTDOWN;
         /** CHECKSTYLE:ON:JavadocVariableCheck. */
     }
 
     /**
-       Worker thread that broadcasts messages to listeners.
-    */
+     * Worker thread that broadcasts messages to listeners.
+     */
     private class MessageBroadcastThread extends WorkerThread {
         @Override
         protected boolean work() throws InterruptedException {
@@ -266,8 +263,7 @@ public abstract class AbstractConnection implements Connection {
                 if (toSend.isEmpty()) {
                     toSend.wait(BROADCAST_WAIT);
                     return true;
-                }
-                else {
+                } else {
                     m = toSend.remove(0);
                 }
             }

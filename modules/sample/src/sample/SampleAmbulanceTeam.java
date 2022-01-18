@@ -46,6 +46,77 @@ public class SampleAmbulanceTeam extends AbstractSampleAgent<AmbulanceTeam> {
     unexploredBuildings = new HashSet<EntityID>( buildingIDs );
   }
 
+  @Override
+  protected void think(int time, ChangeSet changed, Collection<Command> heard, EntityID buildingID, String command){
+     if ( time == config
+        .getIntValue( kernel.KernelConstants.IGNORE_AGENT_COMMANDS_KEY ) ) {
+      // Subscribe to channel 1
+      sendSubscribe( time, 1 );
+    }
+    for ( Command next : heard ) {
+      LOG.debug( "Heard " + next );
+    }
+    updateUnexploredBuildings( changed );
+    // Am I transporting a civilian to a refuge?
+    if ( someoneOnBoard() ) {
+      // Am I at a refuge?
+      if ( location() instanceof Refuge ) {
+        // Unload!
+        LOG.info( "Unloading" );
+        sendUnload( time );
+        return;
+      } else {
+        // Move to a refuge
+        List<EntityID> path = search.breadthFirstSearch( me().getPosition(),
+            refugeIDs );
+        if ( path != null ) {
+          LOG.info( "Moving to refuge" );
+          sendMove( time, path );
+          return;
+        }
+        // What do I do now? Might as well carry on and see if we can dig
+        // someone else out.
+        LOG.debug( "Failed to plan path to refuge" );
+      }
+    }
+    // Go through targets (sorted by distance) and check for things we can do
+    for ( Human next : getTargets() ) {
+      if ( next.getPosition().equals( location().getID() ) ) {
+        // Targets in the same place might need rescueing or loading
+        //** Need to change condition as low hp */
+        if ( ( next instanceof Civilian ) && next.getBuriedness() == 0
+            && !( location() instanceof Refuge ) ) {
+          // Load
+          LOG.info( "Loading " + next );
+          sendLoad( time, next.getID() );
+          return;
+        }
+        // if (next.getBuriedness() > 0) {
+        // Rescue LOG.info("Rescueing " + next);
+        // sendRescue(time, next.getID());
+        // return;
+        // }
+      } else {
+        // Try to move to the target
+        List<EntityID> path = search.breadthFirstSearch( me().getPosition(),
+            next.getPosition() );
+        if ( path != null ) {
+          LOG.info( "Moving to target" );
+          sendMove( time, path );
+          return;
+        }
+      }
+    }
+    // Nothing to do
+    List<EntityID> path = search.breadthFirstSearch( me().getPosition(),
+        unexploredBuildings );
+    if ( path != null ) {
+      LOG.info( "Searching buildings" );
+      sendMove( time, path );
+      return;
+    }
+    LOG.info( "Moving randomly" ); 
+  }
 
   @Override
   protected void think( int time, ChangeSet changed,
@@ -85,6 +156,7 @@ public class SampleAmbulanceTeam extends AbstractSampleAgent<AmbulanceTeam> {
     for ( Human next : getTargets() ) {
       if ( next.getPosition().equals( location().getID() ) ) {
         // Targets in the same place might need rescueing or loading
+        //** Need to change condition as low hp */
         if ( ( next instanceof Civilian ) && next.getBuriedness() == 0
             && !( location() instanceof Refuge ) ) {
           // Load

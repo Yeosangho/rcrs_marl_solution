@@ -46,7 +46,58 @@ public class SamplePoliceForce extends AbstractSampleAgent<PoliceForce> {
     distance = (int) Math.round( config.getIntValue( DISTANCE_KEY ) * 0.95 );
   }
 
-
+  @Override
+  protected void think(int time, ChangeSet changed, Collection<Command> heard, EntityID buildingID, String command){
+    if ( time == config
+        .getIntValue( kernel.KernelConstants.IGNORE_AGENT_COMMANDS_KEY ) ) {
+      // Subscribe to channel 1
+      sendSubscribe( time, 1 );
+    }
+    for ( Command next : heard ) {
+      LOG.debug( "Heard " + next );
+    }
+    // Am I near a blockade?
+    Blockade target = getTargetBlockade();
+    if ( target != null ) {
+      LOG.info( "Clearing blockade " + target );
+      sendSpeak( time, 1, ( "Clearing " + target ).getBytes() );
+      // sendClear(time, target.getX(), target.getY());
+      List<Line2D> lines = GeometryTools2D.pointsToLines(
+          GeometryTools2D.vertexArrayToPoints( target.getApexes() ), true );
+      double best = Double.MAX_VALUE;
+      Point2D bestPoint = null;
+      Point2D origin = new Point2D( me().getX(), me().getY() );
+      for ( Line2D next : lines ) {
+        Point2D closest = GeometryTools2D.getClosestPointOnSegment( next,
+            origin );
+        double d = GeometryTools2D.getDistance( origin, closest );
+        if ( d < best ) {
+          best = d;
+          bestPoint = closest;
+        }
+      }
+      Vector2D v = bestPoint.minus( new Point2D( me().getX(), me().getY() ) );
+      v = v.normalised().scale( 1000000 );
+      sendClear( time, (int) ( me().getX() + v.getX() ),
+          (int) ( me().getY() + v.getY() ) );
+      return;
+    }
+    // Plan a path to a blocked area
+    List<EntityID> path = search.breadthFirstSearch( me().getPosition(),
+        getBlockedRoads() );
+    if ( path != null ) {
+      LOG.info( "Moving to target" );
+      Road r = (Road) model.getEntity( path.get( path.size() - 1 ) );
+      Blockade b = getTargetBlockade( r, -1 );
+      sendMove( time, path, b.getX(), b.getY() );
+      LOG.debug( "Path: " + path );
+      LOG.debug( "Target coordinates: " + b.getX() + ", " + b.getY() );
+      return;
+    }
+    LOG.debug( "Couldn't plan a path to a blocked road" );
+    LOG.info( "Moving randomly" );
+    sendMove( time, randomWalk() );  
+  }
   @Override
   protected void think( int time, ChangeSet changed,
       Collection<Command> heard ) {

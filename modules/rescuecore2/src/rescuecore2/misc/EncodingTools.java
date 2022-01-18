@@ -41,12 +41,9 @@ public final class EncodingTools {
 	/**
 	 * Write a 32-bit integer to an OutputStream, big-endian style.
 	 * 
-	 * @param i
-	 *            The integer to write.
-	 * @param out
-	 *            The OutputStream to write it to.
-	 * @throws IOException
-	 *             If the OutputStream blows up.
+	 * @param i   The integer to write.
+	 * @param out The OutputStream to write it to.
+	 * @throws IOException If the OutputStream blows up.
 	 */
 	public static void writeInt32(int i, OutputStream out) throws IOException {
 		// Most significant byte first
@@ -59,12 +56,9 @@ public final class EncodingTools {
 	/**
 	 * Write a 32-bit integer to a DataOutput, big-endian style.
 	 * 
-	 * @param i
-	 *            The integer to write.
-	 * @param out
-	 *            The DataOutput to write it to.
-	 * @throws IOException
-	 *             If the DataOutput blows up.
+	 * @param i   The integer to write.
+	 * @param out The DataOutput to write it to.
+	 * @throws IOException If the DataOutput blows up.
 	 */
 	public static void writeInt32(int i, DataOutput out) throws IOException {
 		// DataOutput writes big-endian
@@ -74,12 +68,9 @@ public final class EncodingTools {
 	/**
 	 * Write a 32-bit integer to a byte array, big-endian style.
 	 * 
-	 * @param i
-	 *            The integer to write.
-	 * @param out
-	 *            The buffer to write it to.
-	 * @param offset
-	 *            Where in the buffer to write it.
+	 * @param i      The integer to write.
+	 * @param out    The buffer to write it to.
+	 * @param offset Where in the buffer to write it.
 	 */
 	public static void writeInt32(int i, byte[] out, int offset) {
 		// Most significant byte first
@@ -92,13 +83,10 @@ public final class EncodingTools {
 	/**
 	 * Read a 32-bit integer from an input stream, big-endian style.
 	 * 
-	 * @param in
-	 *            The InputStream to read from.
+	 * @param in The InputStream to read from.
 	 * @return The next big-endian, 32-bit integer in the stream.
-	 * @throws IOException
-	 *             If the InputStream blows up.
-	 * @throws EOFException
-	 *             If the end of the stream is reached.
+	 * @throws IOException  If the InputStream blows up.
+	 * @throws EOFException If the end of the stream is reached.
 	 */
 	public static int readInt32(InputStream in) throws IOException {
 		int first = in.read();
@@ -123,13 +111,10 @@ public final class EncodingTools {
 	/**
 	 * Read a 32-bit integer from a DataInput.
 	 * 
-	 * @param in
-	 *            The DataInput to read from.
+	 * @param in The DataInput to read from.
 	 * @return The next big-endian, 32-bit integer in the stream.
-	 * @throws IOException
-	 *             If the DataInput blows up.
-	 * @throws EOFException
-	 *             If the end of the stream is reached.
+	 * @throws IOException  If the DataInput blows up.
+	 * @throws EOFException If the end of the stream is reached.
 	 */
 	public static int readInt32(DataInput in) throws IOException {
 		return in.readInt();
@@ -138,13 +123,10 @@ public final class EncodingTools {
 	/**
 	 * Read a 32-bit integer from an input stream, little-endian style.
 	 * 
-	 * @param in
-	 *            The InputStream to read from.
+	 * @param in The InputStream to read from.
 	 * @return The next little-endian, 32-bit integer in the stream.
-	 * @throws IOException
-	 *             If the InputStream blows up.
-	 * @throws EOFException
-	 *             If the end of the stream is reached.
+	 * @throws IOException  If the InputStream blows up.
+	 * @throws EOFException If the end of the stream is reached.
 	 */
 	public static int readInt32LE(InputStream in) throws IOException {
 		int first = in.read();
@@ -169,23 +151,19 @@ public final class EncodingTools {
 	/**
 	 * Read a 32-bit integer from a byte array, big-endian style.
 	 * 
-	 * @param in
-	 *            The buffer to read from.
-	 * @param offset
-	 *            Where to begin reading.
+	 * @param in     The buffer to read from.
+	 * @param offset Where to begin reading.
 	 * @return The next big-endian, 32-bit integer in the buffer.
 	 */
 	public static int readInt32(byte[] in, int offset) {
-		return (in[offset] << 24) | (in[offset + 1] << 16)
-				| (in[offset + 2] << 8) | (in[offset + 3]);
+		return (in[offset] << 24) | (in[offset + 1] << 16) | (in[offset + 2] << 8) | (in[offset + 3]);
 	}
 
 	/**
-	 * Read a 32-bit integer from a byte array, big-endian style. This is
-	 * equivalent to calling {@link #readInt32(byte[], int) readInt32(in, 0)}.
+	 * Read a 32-bit integer from a byte array, big-endian style. This is equivalent
+	 * to calling {@link #readInt32(byte[], int) readInt32(in, 0)}.
 	 * 
-	 * @param in
-	 *            The buffer to read from.
+	 * @param in The buffer to read from.
 	 * @return The first big-endian, 32-bit integer in the buffer.
 	 */
 	public static int readInt32(byte[] in) {
@@ -195,15 +173,11 @@ public final class EncodingTools {
 	/**
 	 * Write a String to an OutputStream. Strings are always in UTF-8.
 	 * 
-	 * @param s
-	 *            The String to write.
-	 * @param out
-	 *            The OutputStream to write to.
-	 * @throws IOException
-	 *             If the OutputStream blows up.
+	 * @param s   The String to write.
+	 * @param out The OutputStream to write to.
+	 * @throws IOException If the OutputStream blows up.
 	 */
-	public static void writeString(String s, OutputStream out)
-			throws IOException {
+	public static void writeString(String s, OutputStream out) throws IOException {
 		byte[] bytes = s.getBytes(CHARSET);
 		writeInt32(bytes.length, out);
 		out.write(bytes);
@@ -212,12 +186,9 @@ public final class EncodingTools {
 	/**
 	 * Write a String to a DataOutput. Strings are always in UTF-8.
 	 * 
-	 * @param s
-	 *            The String to write.
-	 * @param out
-	 *            The DataOutput to write to.
-	 * @throws IOException
-	 *             If the DataOutput blows up.
+	 * @param s   The String to write.
+	 * @param out The DataOutput to write to.
+	 * @throws IOException If the DataOutput blows up.
 	 */
 	public static void writeString(String s, DataOutput out) throws IOException {
 		byte[] bytes = s.getBytes(CHARSET);
@@ -228,12 +199,9 @@ public final class EncodingTools {
 	/**
 	 * Write a String to a byte array. Strings are always in UTF-8.
 	 * 
-	 * @param s
-	 *            The String to write.
-	 * @param out
-	 *            The byte array to write to. Make sure it's big enough!
-	 * @param offset
-	 *            The index to start writing from.
+	 * @param s      The String to write.
+	 * @param out    The byte array to write to. Make sure it's big enough!
+	 * @param offset The index to start writing from.
 	 */
 	public static void writeString(String s, byte[] out, int offset) {
 		byte[] bytes = s.getBytes(CHARSET);
@@ -244,13 +212,10 @@ public final class EncodingTools {
 	/**
 	 * Read a String from an InputStream.
 	 * 
-	 * @param in
-	 *            The InputStream to read.
+	 * @param in The InputStream to read.
 	 * @return The string that was read.
-	 * @throws IOException
-	 *             If the InputStream blows up.
-	 * @throws EOFException
-	 *             If the end of the stream is reached.
+	 * @throws IOException  If the InputStream blows up.
+	 * @throws EOFException If the end of the stream is reached.
 	 */
 	public static String readString(InputStream in) throws IOException {
 		int length = readInt32(in);
@@ -259,8 +224,7 @@ public final class EncodingTools {
 		while (count < length) {
 			int read = in.read(buffer, count, length - count);
 			if (read == -1) {
-				throw new EOFException("Broken input pipe. Read " + count
-						+ " bytes of " + length + ".");
+				throw new EOFException("Broken input pipe. Read " + count + " bytes of " + length + ".");
 			}
 			count += read;
 		}
@@ -270,13 +234,10 @@ public final class EncodingTools {
 	/**
 	 * Read a String from a DataInput.
 	 * 
-	 * @param in
-	 *            The DataInput to read.
+	 * @param in The DataInput to read.
 	 * @return The string that was read.
-	 * @throws IOException
-	 *             If the DataInput blows up.
-	 * @throws EOFException
-	 *             If the end of the stream is reached.
+	 * @throws IOException  If the DataInput blows up.
+	 * @throws EOFException If the end of the stream is reached.
 	 */
 	public static String readString(DataInput in) throws IOException {
 		int length = readInt32(in);
@@ -289,8 +250,7 @@ public final class EncodingTools {
 	 * Read a String from a byte array. This is equivalent to calling
 	 * {@link #readString(byte[], int) readString(in, 0)}.
 	 * 
-	 * @param in
-	 *            The byte array to read.
+	 * @param in The byte array to read.
 	 * @return The string that was read.
 	 */
 	public static String readString(byte[] in) {
@@ -300,10 +260,8 @@ public final class EncodingTools {
 	/**
 	 * Read a String from a byte array.
 	 * 
-	 * @param in
-	 *            The byte array to read.
-	 * @param offset
-	 *            The index in the array to read from.
+	 * @param in     The byte array to read.
+	 * @param offset The index in the array to read from.
 	 * @return The string that was read.
 	 */
 	public static String readString(byte[] in, int offset) {
@@ -316,13 +274,10 @@ public final class EncodingTools {
 	/**
 	 * Read a fixed number of bytes from an InputStream into an array.
 	 * 
-	 * @param size
-	 *            The number of bytes to read.
-	 * @param in
-	 *            The InputStream to read from.
+	 * @param size The number of bytes to read.
+	 * @param in   The InputStream to read from.
 	 * @return A new byte array containing the bytes.
-	 * @throws IOException
-	 *             If the read operation fails.
+	 * @throws IOException If the read operation fails.
 	 */
 	public static byte[] readBytes(int size, InputStream in) throws IOException {
 		byte[] buffer = new byte[size];
@@ -330,24 +285,21 @@ public final class EncodingTools {
 		while (total < size) {
 			int read = in.read(buffer, total, size - total);
 			if (read == -1) {
-				throw new EOFException("Broken input pipe. Read " + total
-						+ " bytes of " + size + ".");
+				throw new EOFException("Broken input pipe. Read " + total + " bytes of " + size + ".");
 			}
 			total += read;
 		}
+
 		return buffer;
 	}
 
 	/**
 	 * Read a fixed number of bytes from a DataInput into an array.
 	 * 
-	 * @param size
-	 *            The number of bytes to read.
-	 * @param in
-	 *            The DataInput to read from.
+	 * @param size The number of bytes to read.
+	 * @param in   The DataInput to read from.
 	 * @return A new byte array containing the bytes.
-	 * @throws IOException
-	 *             If the read operation fails.
+	 * @throws IOException If the read operation fails.
 	 */
 	public static byte[] readBytes(int size, DataInput in) throws IOException {
 		byte[] buffer = new byte[size];
@@ -358,15 +310,11 @@ public final class EncodingTools {
 	/**
 	 * Write a double to an OutputStream.
 	 * 
-	 * @param d
-	 *            The double to write.
-	 * @param out
-	 *            The OutputStream to write it to.
-	 * @throws IOException
-	 *             If the OutputStream blows up.
+	 * @param d   The double to write.
+	 * @param out The OutputStream to write it to.
+	 * @throws IOException If the OutputStream blows up.
 	 */
-	public static void writeDouble(double d, OutputStream out)
-			throws IOException {
+	public static void writeDouble(double d, OutputStream out) throws IOException {
 		long bits = Double.doubleToLongBits(d);
 		out.write((byte) (bits >> 56) & 0xFF);
 		out.write((byte) (bits >> 48) & 0xFF);
@@ -381,12 +329,9 @@ public final class EncodingTools {
 	/**
 	 * Write a double to a DataOutput.
 	 * 
-	 * @param d
-	 *            The double to write.
-	 * @param out
-	 *            The DataOutput to write it to.
-	 * @throws IOException
-	 *             If the DataOutput blows up.
+	 * @param d   The double to write.
+	 * @param out The DataOutput to write it to.
+	 * @throws IOException If the DataOutput blows up.
 	 */
 	public static void writeDouble(double d, DataOutput out) throws IOException {
 		out.writeDouble(d);
@@ -395,12 +340,9 @@ public final class EncodingTools {
 	/**
 	 * Write a double to a byte array.
 	 * 
-	 * @param d
-	 *            The double to write.
-	 * @param out
-	 *            The buffer to write it to.
-	 * @param offset
-	 *            Where in the buffer to write it.
+	 * @param d      The double to write.
+	 * @param out    The buffer to write it to.
+	 * @param offset Where in the buffer to write it.
 	 */
 	public static void writeDouble(double d, byte[] out, int offset) {
 		long bits = Double.doubleToLongBits(d);
@@ -417,39 +359,31 @@ public final class EncodingTools {
 	/**
 	 * Read a double from an input stream.
 	 * 
-	 * @param in
-	 *            The InputStream to read from.
+	 * @param in The InputStream to read from.
 	 * @return The next double in the stream.
-	 * @throws IOException
-	 *             If the InputStream blows up.
-	 * @throws EOFException
-	 *             If the end of the stream is reached.
+	 * @throws IOException  If the InputStream blows up.
+	 * @throws EOFException If the end of the stream is reached.
 	 */
 	public static double readDouble(InputStream in) throws IOException {
 		long[] data = new long[8];
 		for (int i = 0; i < data.length; ++i) {
 			data[i] = in.read();
 			if (data[i] == -1) {
-				throw new EOFException("Broken input pipe. Read " + i
-						+ " bytes of 8.");
+				throw new EOFException("Broken input pipe. Read " + i + " bytes of 8.");
 			}
 		}
-		long result = data[0] << 56 | data[1] << 48 | data[2] << 40
-				| data[3] << 32 | data[4] << 24 | data[5] << 16 | data[6] << 8
-				| data[7];
+		long result = data[0] << 56 | data[1] << 48 | data[2] << 40 | data[3] << 32 | data[4] << 24 | data[5] << 16
+				| data[6] << 8 | data[7];
 		return Double.longBitsToDouble(result);
 	}
 
 	/**
 	 * Read a double from a DataInput.
 	 * 
-	 * @param in
-	 *            The DataInput to read from.
+	 * @param in The DataInput to read from.
 	 * @return The next double in the stream.
-	 * @throws IOException
-	 *             If the DataInput blows up.
-	 * @throws EOFException
-	 *             If the end of the stream is reached.
+	 * @throws IOException  If the DataInput blows up.
+	 * @throws EOFException If the end of the stream is reached.
 	 */
 	public static double readDouble(DataInput in) throws IOException {
 		return in.readDouble();
@@ -458,10 +392,8 @@ public final class EncodingTools {
 	/**
 	 * Read a double from a byte array.
 	 * 
-	 * @param in
-	 *            The buffer to read from.
-	 * @param offset
-	 *            Where to begin reading.
+	 * @param in     The buffer to read from.
+	 * @param offset Where to begin reading.
 	 * @return The next double in the buffer.
 	 */
 	public static double readDouble(byte[] in, int offset) {
@@ -469,9 +401,8 @@ public final class EncodingTools {
 		for (int i = 0; i < 8; ++i) {
 			parts[i] = in[offset + i];
 		}
-		long result = parts[0] << 56 | parts[1] << 48 | parts[2] << 40
-				| parts[3] << 32 | parts[4] << 24 | parts[5] << 16
-				| parts[6] << 8 | parts[7];
+		long result = parts[0] << 56 | parts[1] << 48 | parts[2] << 40 | parts[3] << 32 | parts[4] << 24
+				| parts[5] << 16 | parts[6] << 8 | parts[7];
 		return Double.longBitsToDouble(result);
 	}
 
@@ -479,8 +410,7 @@ public final class EncodingTools {
 	 * Read a double from a byte array. This is equivalent to calling
 	 * {@link #readDouble(byte[], int) readDouble(in, 0)}.
 	 * 
-	 * @param in
-	 *            The buffer to read from.
+	 * @param in The buffer to read from.
 	 * @return The first double in the buffer.
 	 */
 	public static double readDouble(byte[] in) {
@@ -490,42 +420,31 @@ public final class EncodingTools {
 	/**
 	 * Write a boolean to an OutputStream.
 	 * 
-	 * @param b
-	 *            The boolean to write.
-	 * @param out
-	 *            The OutputStream to write it to.
-	 * @throws IOException
-	 *             If the OutputStream blows up.
+	 * @param b   The boolean to write.
+	 * @param out The OutputStream to write it to.
+	 * @throws IOException If the OutputStream blows up.
 	 */
-	public static void writeBoolean(boolean b, OutputStream out)
-			throws IOException {
+	public static void writeBoolean(boolean b, OutputStream out) throws IOException {
 		out.write(b ? 1 : 0);
 	}
 
 	/**
 	 * Write a boolean to a DataOutput.
 	 * 
-	 * @param b
-	 *            The boolean to write.
-	 * @param out
-	 *            The DataOutput to write it to.
-	 * @throws IOException
-	 *             If the DataOutput blows up.
+	 * @param b   The boolean to write.
+	 * @param out The DataOutput to write it to.
+	 * @throws IOException If the DataOutput blows up.
 	 */
-	public static void writeBoolean(boolean b, DataOutput out)
-			throws IOException {
+	public static void writeBoolean(boolean b, DataOutput out) throws IOException {
 		out.writeBoolean(b);
 	}
 
 	/**
 	 * Write a boolean to a byte array.
 	 * 
-	 * @param b
-	 *            The boolean to write.
-	 * @param out
-	 *            The buffer to write it to.
-	 * @param offset
-	 *            Where in the buffer to write it.
+	 * @param b      The boolean to write.
+	 * @param out    The buffer to write it to.
+	 * @param offset Where in the buffer to write it.
 	 */
 	public static void writeBoolean(boolean b, byte[] out, int offset) {
 		out[offset] = (byte) (b ? 1 : 0);
@@ -534,13 +453,10 @@ public final class EncodingTools {
 	/**
 	 * Read a boolean from an input stream.
 	 * 
-	 * @param in
-	 *            The InputStream to read from.
+	 * @param in The InputStream to read from.
 	 * @return The next boolean in the stream.
-	 * @throws IOException
-	 *             If the InputStream blows up.
-	 * @throws EOFException
-	 *             If the end of the stream is reached.
+	 * @throws IOException  If the InputStream blows up.
+	 * @throws EOFException If the end of the stream is reached.
 	 */
 	public static boolean readBoolean(InputStream in) throws IOException {
 		int b = in.read();
@@ -550,13 +466,10 @@ public final class EncodingTools {
 	/**
 	 * Read a boolean from a DataInput.
 	 * 
-	 * @param in
-	 *            The DataInput to read from.
+	 * @param in The DataInput to read from.
 	 * @return The next boolean in the stream.
-	 * @throws IOException
-	 *             If the DataInput blows up.
-	 * @throws EOFException
-	 *             If the end of the stream is reached.
+	 * @throws IOException  If the DataInput blows up.
+	 * @throws EOFException If the end of the stream is reached.
 	 */
 	public static boolean readBoolean(DataInput in) throws IOException {
 		return in.readBoolean();
@@ -565,10 +478,8 @@ public final class EncodingTools {
 	/**
 	 * Read a boolean from a byte array.
 	 * 
-	 * @param in
-	 *            The buffer to read from.
-	 * @param offset
-	 *            Where to begin reading.
+	 * @param in     The buffer to read from.
+	 * @param offset Where to begin reading.
 	 * @return The next boolean in the buffer.
 	 */
 	public static boolean readBoolean(byte[] in, int offset) {
@@ -579,8 +490,7 @@ public final class EncodingTools {
 	 * Read a boolean from a byte array. This is equivalent to calling
 	 * {@link #readBoolean(byte[], int) readBoolean(in, 0)}.
 	 * 
-	 * @param in
-	 *            The buffer to read from.
+	 * @param in The buffer to read from.
 	 * @return The first boolean in the buffer.
 	 */
 	public static boolean readBoolean(byte[] in) {
@@ -592,15 +502,11 @@ public final class EncodingTools {
 	 * skipped. If InputStream.skip ever returns a negative number then an
 	 * EOFException is thrown.
 	 * 
-	 * @param in
-	 *            The InputStream to skip.
-	 * @param count
-	 *            The number of bytes to skip.
-	 * @throws IOException
-	 *             If the bytes cannot be skipped for some reason.
+	 * @param in    The InputStream to skip.
+	 * @param count The number of bytes to skip.
+	 * @throws IOException If the bytes cannot be skipped for some reason.
 	 */
-	public static void reallySkip(InputStream in, long count)
-			throws IOException {
+	public static void reallySkip(InputStream in, long count) throws IOException {
 		long done = 0;
 		while (done < count) {
 			long next = in.skip(count - done);
@@ -612,16 +518,13 @@ public final class EncodingTools {
 	}
 
 	/**
-	 * Call DataInput.skip until exactly <code>count</code> bytes have been
-	 * skipped. If DataInput.skip ever returns a negative number then an
-	 * EOFException is thrown.
+	 * Call DataInput.skip until exactly <code>count</code> bytes have been skipped.
+	 * If DataInput.skip ever returns a negative number then an EOFException is
+	 * thrown.
 	 * 
-	 * @param in
-	 *            The DataInput to skip.
-	 * @param count
-	 *            The number of bytes to skip.
-	 * @throws IOException
-	 *             If the bytes cannot be skipped for some reason.
+	 * @param in    The DataInput to skip.
+	 * @param count The number of bytes to skip.
+	 * @throws IOException If the bytes cannot be skipped for some reason.
 	 */
 	public static void reallySkip(DataInput in, int count) throws IOException {
 		int done = 0;
@@ -637,15 +540,11 @@ public final class EncodingTools {
 	/**
 	 * Write an entity to a stream.
 	 * 
-	 * @param e
-	 *            The entity to write.
-	 * @param out
-	 *            The OutputStream to write to.
-	 * @throws IOException
-	 *             If there is a problem writing to the stream.
+	 * @param e   The entity to write.
+	 * @param out The OutputStream to write to.
+	 * @throws IOException If there is a problem writing to the stream.
 	 */
-	public static void writeEntity(Entity e, OutputStream out)
-			throws IOException {
+	public static void writeEntity(Entity e, OutputStream out) throws IOException {
 		// Type URN, entityID, size, content
 		// Gather the content first
 		ByteArrayOutputStream gather = new ByteArrayOutputStream();
@@ -665,12 +564,9 @@ public final class EncodingTools {
 	/**
 	 * Write an entity to a DataOutput.
 	 * 
-	 * @param e
-	 *            The entity to write.
-	 * @param out
-	 *            The DataOutput to write to.
-	 * @throws IOException
-	 *             If there is a problem writing to the stream.
+	 * @param e   The entity to write.
+	 * @param out The DataOutput to write to.
+	 * @throws IOException If there is a problem writing to the stream.
 	 */
 	public static void writeEntity(Entity e, DataOutput out) throws IOException {
 		// Type URN, entityID, size, content
@@ -692,11 +588,9 @@ public final class EncodingTools {
 	/**
 	 * Read an entity from a stream.
 	 * 
-	 * @param in
-	 *            The InputStream to read from.
+	 * @param in The InputStream to read from.
 	 * @return A new Entity, or null if the entity URN is not recognised.
-	 * @throws IOException
-	 *             If there is a problem reading from the stream.
+	 * @throws IOException If there is a problem reading from the stream.
 	 */
 	public static Entity readEntity(InputStream in) throws IOException {
 		String urn = readString(in);
@@ -706,8 +600,7 @@ public final class EncodingTools {
 		int entityID = readInt32(in);
 		int size = readInt32(in);
 		byte[] content = readBytes(size, in);
-		Entity result = Registry.getCurrentRegistry().createEntity(urn,
-				new EntityID(entityID));
+		Entity result = Registry.getCurrentRegistry().createEntity(urn, new EntityID(entityID));
 		if (result != null) {
 			result.read(new ByteArrayInputStream(content));
 		}
@@ -717,11 +610,9 @@ public final class EncodingTools {
 	/**
 	 * Read an entity from a DataInput.
 	 * 
-	 * @param in
-	 *            The DataInput to read from.
+	 * @param in The DataInput to read from.
 	 * @return A new Entity, or null if the entity URN is not recognised.
-	 * @throws IOException
-	 *             If there is a problem reading from the stream.
+	 * @throws IOException If there is a problem reading from the stream.
 	 */
 	public static Entity readEntity(DataInput in) throws IOException {
 		String urn = readString(in);
@@ -731,8 +622,7 @@ public final class EncodingTools {
 		int entityID = readInt32(in);
 		int size = readInt32(in);
 		byte[] content = readBytes(size, in);
-		Entity result = Registry.getCurrentRegistry().createEntity(urn,
-				new EntityID(entityID));
+		Entity result = Registry.getCurrentRegistry().createEntity(urn, new EntityID(entityID));
 		if (result != null) {
 			result.read(new ByteArrayInputStream(content));
 		}
@@ -742,15 +632,11 @@ public final class EncodingTools {
 	/**
 	 * Write a property to a stream.
 	 * 
-	 * @param p
-	 *            The property to write.
-	 * @param out
-	 *            The OutputStream to write to.
-	 * @throws IOException
-	 *             If there is a problem writing to the stream.
+	 * @param p   The property to write.
+	 * @param out The OutputStream to write to.
+	 * @throws IOException If there is a problem writing to the stream.
 	 */
-	public static void writeProperty(Property p, OutputStream out)
-			throws IOException {
+	public static void writeProperty(Property p, OutputStream out) throws IOException {
 		// Type
 		writeString(p.getURN(), out);
 		writeBoolean(p.isDefined(), out);
@@ -762,21 +648,18 @@ public final class EncodingTools {
 			writeInt32(bytes.length, out);
 			// Data
 			out.write(bytes);
+			out.flush();
 		}
 	}
 
 	/**
 	 * Write a property to a DataOutput.
 	 * 
-	 * @param p
-	 *            The property to write.
-	 * @param out
-	 *            The DataOutput to write to.
-	 * @throws IOException
-	 *             If there is a problem writing to the stream.
+	 * @param p   The property to write.
+	 * @param out The DataOutput to write to.
+	 * @throws IOException If there is a problem writing to the stream.
 	 */
-	public static void writeProperty(Property p, DataOutput out)
-			throws IOException {
+	public static void writeProperty(Property p, DataOutput out) throws IOException {
 		// Type
 		writeString(p.getURN(), out);
 		writeBoolean(p.isDefined(), out);
@@ -794,11 +677,9 @@ public final class EncodingTools {
 	/**
 	 * Read a property from a stream.
 	 * 
-	 * @param in
-	 *            The InputStream to read from.
+	 * @param in The InputStream to read from.
 	 * @return A new Property, or null if the property URN is not recognised.
-	 * @throws IOException
-	 *             If there is a problem reading from the stream.
+	 * @throws IOException If there is a problem reading from the stream.
 	 */
 	public static Property readProperty(InputStream in) throws IOException {
 		String urn = readString(in);
@@ -820,11 +701,9 @@ public final class EncodingTools {
 	/**
 	 * Read a property from a DataInput.
 	 * 
-	 * @param in
-	 *            The DataInput to read from.
+	 * @param in The DataInput to read from.
 	 * @return A new Property, or null if the property URN is not recognised.
-	 * @throws IOException
-	 *             If there is a problem reading from the stream.
+	 * @throws IOException If there is a problem reading from the stream.
 	 */
 	public static Property readProperty(DataInput in) throws IOException {
 		String urn = readString(in);
@@ -846,15 +725,11 @@ public final class EncodingTools {
 	/**
 	 * Write a message to a stream.
 	 * 
-	 * @param m
-	 *            The message to write.
-	 * @param out
-	 *            The OutputStream to write to.
-	 * @throws IOException
-	 *             If there is a problem writing to the stream.
+	 * @param m   The message to write.
+	 * @param out The OutputStream to write to.
+	 * @throws IOException If there is a problem writing to the stream.
 	 */
-	public static void writeMessage(Message m, OutputStream out)
-			throws IOException {
+	public static void writeMessage(Message m, OutputStream out) throws IOException {
 		// Type URN, size, content
 		// Gather the content first
 		ByteArrayOutputStream bytes = new ByteArrayOutputStream();
@@ -872,15 +747,11 @@ public final class EncodingTools {
 	/**
 	 * Write a message to a DataOutput.
 	 * 
-	 * @param m
-	 *            The message to write.
-	 * @param out
-	 *            The DataOutput to write to.
-	 * @throws IOException
-	 *             If there is a problem writing to the stream.
+	 * @param m   The message to write.
+	 * @param out The DataOutput to write to.
+	 * @throws IOException If there is a problem writing to the stream.
 	 */
-	public static void writeMessage(Message m, DataOutput out)
-			throws IOException {
+	public static void writeMessage(Message m, DataOutput out) throws IOException {
 		// Type URN, size, content
 		// Gather the content first
 		ByteArrayOutputStream bytes = new ByteArrayOutputStream();
@@ -898,11 +769,9 @@ public final class EncodingTools {
 	/**
 	 * Read a message from a stream.
 	 * 
-	 * @param in
-	 *            The InputStream to read from.
+	 * @param in The InputStream to read from.
 	 * @return A new Message, or null if the message URN is not recognised.
-	 * @throws IOException
-	 *             If there is a problem reading from the stream.
+	 * @throws IOException If there is a problem reading from the stream.
 	 */
 	public static Message readMessage(InputStream in) throws IOException {
 		String urn = readString(in);
@@ -911,19 +780,16 @@ public final class EncodingTools {
 		}
 		int size = readInt32(in);
 		byte[] content = readBytes(size, in);
-		Message result = Registry.getCurrentRegistry().createMessage(urn,
-				new ByteArrayInputStream(content));
+		Message result = Registry.getCurrentRegistry().createMessage(urn, new ByteArrayInputStream(content));
 		return result;
 	}
 
 	/**
 	 * Read a message from a DataInput.
 	 * 
-	 * @param in
-	 *            The DataInput to read from.
+	 * @param in The DataInput to read from.
 	 * @return A new Message, or null if the message URN is not recognised.
-	 * @throws IOException
-	 *             If there is a problem reading from the stream.
+	 * @throws IOException If there is a problem reading from the stream.
 	 */
 	public static Message readMessage(DataInput in) throws IOException {
 		String urn = readString(in);
@@ -932,21 +798,17 @@ public final class EncodingTools {
 		}
 		int size = readInt32(in);
 		byte[] content = readBytes(size, in);
-		Message result = Registry.getCurrentRegistry().createMessage(urn,
-				new ByteArrayInputStream(content));
+		Message result = Registry.getCurrentRegistry().createMessage(urn, new ByteArrayInputStream(content));
 		return result;
 	}
 
 	/**
 	 * Read a 32-bit float from an input stream, big-endian style.
 	 * 
-	 * @param in
-	 *            The InputStream to read from.
+	 * @param in The InputStream to read from.
 	 * @return The next big-endian, 32-bit float in the stream.
-	 * @throws IOException
-	 *             If the InputStream blows up.
-	 * @throws EOFException
-	 *             If the end of the stream is reached.
+	 * @throws IOException  If the InputStream blows up.
+	 * @throws EOFException If the end of the stream is reached.
 	 */
 	public static float readFloat32(InputStream in) throws IOException {
 		int i = readInt32(in);
@@ -956,15 +818,11 @@ public final class EncodingTools {
 	/**
 	 * Write a 32-bit float to an OutputStream, big-endian style.
 	 * 
-	 * @param f
-	 *            The float to write.
-	 * @param out
-	 *            The OutputStream to write it to.
-	 * @throws IOException
-	 *             If the OutputStream blows up.
+	 * @param f   The float to write.
+	 * @param out The OutputStream to write it to.
+	 * @throws IOException If the OutputStream blows up.
 	 */
-	public static void writeFloat32(float f, OutputStream out)
-			throws IOException {
+	public static void writeFloat32(float f, OutputStream out) throws IOException {
 		/* Aftershock Requirement:2013 */
 		int i = Float.floatToIntBits(f);
 		writeInt32(i, out);
@@ -973,12 +831,9 @@ public final class EncodingTools {
 	/**
 	 * Write a 32-bit float to a DataOutput, big-endian style.
 	 * 
-	 * @param f
-	 *            The float to write.
-	 * @param out
-	 *            The DataOutput to write it to.
-	 * @throws IOException
-	 *             If the DataOutput blows up.
+	 * @param f   The float to write.
+	 * @param out The DataOutput to write it to.
+	 * @throws IOException If the DataOutput blows up.
 	 */
 	public static void writeFloat32(float f, DataOutput out) throws IOException {
 		/* Aftershock Requirement:2013 */
@@ -989,12 +844,9 @@ public final class EncodingTools {
 	/**
 	 * Write a 32-bit float to a byte array, big-endian style.
 	 * 
-	 * @param f
-	 *            The float to write.
-	 * @param out
-	 *            The buffer to write it to.
-	 * @param offset
-	 *            Where in the buffer to write it.
+	 * @param f      The float to write.
+	 * @param out    The buffer to write it to.
+	 * @param offset Where in the buffer to write it.
 	 */
 	public static void writeFloat32(float f, byte[] out, int offset) {
 		/* Aftershock Requirement:2013 */
@@ -1007,13 +859,10 @@ public final class EncodingTools {
 	/**
 	 * Read a 32-bit float from a DataInput.
 	 * 
-	 * @param in
-	 *            The DataInput to read from.
+	 * @param in The DataInput to read from.
 	 * @return The next big-endian, 32-bit float in the stream.
-	 * @throws IOException
-	 *             If the DataInput blows up.
-	 * @throws EOFException
-	 *             If the end of the stream is reached.
+	 * @throws IOException  If the DataInput blows up.
+	 * @throws EOFException If the end of the stream is reached.
 	 */
 
 	public static float readFloat32(DataInput in) throws IOException {

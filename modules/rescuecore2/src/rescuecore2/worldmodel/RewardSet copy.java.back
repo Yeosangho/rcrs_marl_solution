@@ -1,0 +1,94 @@
+package rescuecore2.worldmodel;
+
+import static rescuecore2.misc.EncodingTools.writeInt32;
+import static rescuecore2.misc.EncodingTools.writeFloat32;
+import static rescuecore2.misc.EncodingTools.writeProperty;
+import static rescuecore2.misc.EncodingTools.readInt32;
+import static rescuecore2.misc.EncodingTools.readFloat32;
+import static rescuecore2.misc.EncodingTools.readProperty;
+
+import java.util.Set;
+import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.List;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.IOException;
+import rescuecore2.misc.collections.LazyMap;
+
+/**
+   Abstract base class for concrete Entity implementations.
+ */
+public class RewardSet  {
+  private Map<EntityID, List<Float>> rewards;
+  
+  public RewardSet(){
+    rewards = new LazyMap<EntityID, List<Float>>(){
+        @Override
+        public List<Float> createValue(){
+            return new ArrayList<Float>();
+        }
+    };
+  }
+  public RewardSet(RewardSet other){
+      this();
+      merge(other);
+  }
+
+  public void addReward(EntityID e, Float reward){
+    rewards.get(e).add(reward);
+  }
+  public void addReward(EntityID e, List<Float> rewardList){
+    rewards.get(e).addAll(rewardList);
+  }
+
+  public void merge(RewardSet other){
+      for(Map.Entry<EntityID, List<Float>> next : other.rewards.entrySet()){
+          EntityID e = next.getKey();
+          List<Float> rewardList = next.getValue();
+          addReward(e, rewardList);
+
+      }
+  }
+
+  public void write(OutputStream out) throws IOException{
+      writeInt32(rewards.size(), out);
+      for ( Map.Entry<EntityID, List<Float>> next : rewards.entrySet() ) {  
+          EntityID id = next.getKey();
+          List<Float> values = next.getValue();
+          writeInt32(id.getValue(), out);
+          writeInt32(values.size(), out);
+          for(Float r : values){
+            writeFloat32(r, out);
+          }
+      }
+  }
+  public String toString(){
+    String result = "";
+    for(Map.Entry<EntityID, List<Float>> next : rewards.entrySet()){
+        EntityID e = next.getKey();
+        List<Float> rewardList = next.getValue();
+        result += Integer.toString(e.getValue()) + ":" + rewardList.toString() + "\n";
+    }
+    return result;
+  }
+  public void read(InputStream in) throws IOException {
+      int entityCount = readInt32(in);
+      for(int i=0; i<entityCount; ++i){
+          EntityID id = new EntityID(readInt32(in));
+          int rewardCount = readInt32(in);
+          List<Float> rewardList = new ArrayList<Float>();
+          for(int j=0; j<rewardCount; ++j){
+            Float r = readFloat32(in);
+            addReward(id, r);
+          }
+      }
+  }
+
+  public Set<EntityID> getChangedEntities() {
+    return new HashSet<EntityID>( rewards.keySet() );
+  }
+}

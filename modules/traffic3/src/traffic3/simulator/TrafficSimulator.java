@@ -40,6 +40,7 @@ import rescuecore2.standard.messages.AKLoad;
 import rescuecore2.standard.messages.AKMove;
 import rescuecore2.standard.messages.AKRescue;
 import rescuecore2.standard.messages.AKUnload;
+import rescuecore2.worldmodel.RewardSet;
 import rescuecore2.worldmodel.ChangeSet;
 import rescuecore2.worldmodel.Entity;
 import rescuecore2.worldmodel.EntityID;
@@ -76,7 +77,7 @@ public class TrafficSimulator extends StandardSimulator implements GUIComponent 
 	private TrafficSimulatorGUI gui;
 
 	private TrafficManager manager;
-
+	private int count = 0;
 	/**
 	 * Construct a new TrafficSimulator.
 	 */
@@ -84,6 +85,8 @@ public class TrafficSimulator extends StandardSimulator implements GUIComponent 
 		manager = new TrafficManager();
 		gui = new TrafficSimulatorGUI(manager);
 	}
+
+
 
 	@Override
 	public JComponent getGUIComponent() {
@@ -135,9 +138,125 @@ public class TrafficSimulator extends StandardSimulator implements GUIComponent 
 		gui.initialise();
 		manager.cacheInformation(model);
 	}
+    @Override
+    protected void processCommands(KSCommands c, ChangeSet changes, RewardSet rewards) {
 
+		long start = System.currentTimeMillis();
+		Logger.info("Timestep " + c.getTime());
+		if((c.getTime()-1) % config.getIntValue("episode.length") == 0){
+			System.out.println("Traffic simulation : "+ c.getTime()+ ": "+ count);
+			createWorldModel();
+			postConnect();
+		}	
+		else{		
+		// Clear all cached blockade information
+
+		// for (TrafficArea next : manager.getAreas()) {
+		// next.clearBlockadeCache();
+		// }
+		// Clear all destinations and position history
+		for (TrafficAgent agent : manager.getAgents()) {
+			agent.clearPath();
+			agent.clearPositionHistory();
+			agent.setMobile(true);
+		}
+		for (Command next : c.getCommands()) {
+			if (next instanceof AKMove) {
+				handleMove((AKMove) next);
+			}
+			if (next instanceof AKLoad) {
+				handleLoad((AKLoad) next, changes);
+			}
+			if (next instanceof AKUnload) {
+				handleUnload((AKUnload) next, changes);
+			}
+			if (next instanceof AKRescue) {
+				handleRescue((AKRescue) next, changes);
+			}
+			if (next instanceof AKClear) {
+				handleClear((AKClear) next, changes);
+			}
+			if (next instanceof AKClearArea) {
+				handleClear((AKClearArea) next, changes);
+			}
+			if (next instanceof AKExtinguish) {
+				handleExtinguish((AKExtinguish) next, changes);
+			}
+		}
+		// Any agents that are dead or in ambulances are immobile
+		// Civilians that are injured are immobile
+		// Agents that are buried are immobile
+		// Civilians in refuges are immobile
+		for (StandardEntity next : model) {
+			if (next instanceof Human) {
+				Human h = (Human) next;
+				if (h.isHPDefined() && h.getHP() <= 0) {
+					Logger.debug("Agent " + h + " is dead");
+					manager.getTrafficAgent(h).setMobile(false);
+				}
+				if (h.isPositionDefined() && (model.getEntity(h.getPosition()) instanceof AmbulanceTeam)) {
+					Logger.debug("Agent " + h + " is in an ambulance");
+					manager.getTrafficAgent(h).setMobile(false);
+				}
+				if (h.isBuriednessDefined() && h.getBuriedness() > 0) {
+					Logger.debug("Agent " + h + " is buried");
+					manager.getTrafficAgent(h).setMobile(false);
+				}
+				if (h instanceof Civilian && h.isDamageDefined() && h.getDamage() > 0) {
+					Logger.debug("Agent " + h + " is injured");
+					manager.getTrafficAgent(h).setMobile(false);
+				}
+				if (h instanceof Civilian && h.isPositionDefined() && (model.getEntity(h.getPosition()) instanceof Refuge)) {
+					Logger.debug("Agent " + h + " is in a refuge");
+					manager.getTrafficAgent(h).setMobile(false);
+				}
+			}
+		}
+	
+		timestep();
+		for (TrafficAgent agent : manager.getAgents()) {
+			// Update position and positionHistory for agents that were not
+			// loaded or unloaded
+			Human human = agent.getHuman();
+			if (!agent.isMobile()) {
+				human.undefinePositionHistory();
+				human.setTravelDistance(0);
+				changes.addChange(human, human.getPositionHistoryProperty());
+				changes.addChange(human, human.getTravelDistanceProperty());
+				continue;
+			}
+			Point2D[] history = agent.getPositionHistory().toArray(new Point2D[0]);
+			int[] historyArray = new int[history.length * 2];
+			for (int i = 0; i < history.length; ++i) {
+				historyArray[i * 2] = (int) history[i].getX();
+				historyArray[(i * 2) + 1] = (int) history[i].getY();
+			}
+			double x = agent.getX();
+			double y = agent.getY();
+			TrafficArea location = agent.getArea();
+			if (location != null) {
+				human.setPosition(location.getArea().getID());
+				// Logger.debug(human + " new position: " +
+				// human.getPosition());
+				changes.addChange(human, human.getPositionProperty());
+			}
+			human.setX((int) x);
+			human.setY((int) y);
+			human.setPositionHistory(historyArray);
+			human.setTravelDistance((int) agent.getTravelDistance());
+			changes.addChange(human, human.getXProperty());
+			changes.addChange(human, human.getYProperty());
+			changes.addChange(human, human.getPositionHistoryProperty());
+			changes.addChange(human, human.getTravelDistanceProperty());
+		}
+		}
+		long end = System.currentTimeMillis();
+		Logger.info("Timestep " + c.getTime() + " took " + (end - start) + " ms");	
+
+	}
 	@Override
 	protected void processCommands(KSCommands c, ChangeSet changes) {
+
 		long start = System.currentTimeMillis();
 		Logger.info("Timestep " + c.getTime());
 		// Clear all cached blockade information
@@ -203,6 +322,11 @@ public class TrafficSimulator extends StandardSimulator implements GUIComponent 
 				}
 			}
 		}
+		if((c.getTime()-1) % config.getIntValue("episode.length") == 0){
+			System.out.println("Traffic simulation : "+ c.getTime()+ ": "+ count);
+			createWorldModel();
+			postConnect();
+		}		
 		timestep();
 		for (TrafficAgent agent : manager.getAgents()) {
 			// Update position and positionHistory for agents that were not
@@ -875,6 +999,9 @@ public class TrafficSimulator extends StandardSimulator implements GUIComponent 
 	}
 
 	private void timestep() {
+
+		count++;
+
 		long start = System.currentTimeMillis();
 		for (TrafficAgent agent : manager.getAgents()) {
 			agent.beginTimestep();

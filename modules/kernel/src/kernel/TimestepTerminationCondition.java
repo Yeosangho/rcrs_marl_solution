@@ -17,6 +17,7 @@ public class TimestepTerminationCondition implements TerminationCondition {
     @Override
     public void initialise(Config config) {
         time = config.getIntValue(TIMESTEPS_KEY);
+        //System.out.println("episode.length : " + config.getIntValue("episode.length"));
     }
 
     @Override

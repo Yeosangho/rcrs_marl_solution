@@ -9,6 +9,8 @@ import rescuecore2.connection.ConnectionListener;
 import rescuecore2.messages.Message;
 import rescuecore2.messages.Command;
 import rescuecore2.messages.control.KASense;
+import rescuecore2.messages.control.KACommand;
+
 import rescuecore2.worldmodel.Entity;
 import rescuecore2.worldmodel.EntityID;
 import rescuecore2.worldmodel.ChangeSet;
@@ -37,6 +39,7 @@ public class AgentProxy extends AbstractKernelComponent {
                 return new ArrayList<Command>();
             }
         };
+        
         c.addConnectionListener(new AgentConnectionListener());
     }
 
@@ -76,6 +79,12 @@ public class AgentProxy extends AbstractKernelComponent {
     public void sendPerceptionUpdate(int time, ChangeSet visible, Collection<? extends Command> heard) {
         KASense sense = new KASense(getControlledEntity().getID(), time, visible, heard);
         send(sense);
+    }
+
+
+    public void sendPerceptionUpdate(int time, ChangeSet visible, Collection<? extends Command> heard, int buildingID, String c) {
+        KACommand command = new KACommand(getControlledEntity().getID(), time, visible, heard, new EntityID(buildingID), c);
+        send(command);
     }
 
     /**

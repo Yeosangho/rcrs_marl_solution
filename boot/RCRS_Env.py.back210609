@@ -1,0 +1,313 @@
+from socket import *
+from select import select
+import sys
+import json
+import random
+from rcrsJsonStateStringParser import RcrsJsonStateStringParser
+import csv
+from imagifier import Imagifier
+import numpy as np
+import ast
+import numpy as np
+import copy
+from sklearn.preprocessing import MinMaxScaler
+from PIL import Image
+
+
+HOST = 'localhost'
+PORT = 9999
+BUFSIZE = 1024
+class RCRS_Env:
+    def __init__(self):
+        self.clientSocket = socket(AF_INET, SOCK_STREAM)
+        self.parser = RcrsJsonStateStringParser()
+        self.actionspace = []
+        self.previousSqrtBuildingDamage = 1.0
+        self.previousBuildingDamage = 1.0
+        self.previousDiffSqrtBuildingDamage = 0.0
+        self.previousDiffBuildingDamage = 0.0
+        self.previousSqrtReward = 0.0
+        self.previousReward = 0.0
+        self.stateBuilder = Imagifier()
+        self.states = []
+        #현재 시뮬레이션의 모든 정보를 기록하는 개체. 
+        #self.world = dict()
+        self.states_for_pca = []
+        self.zeroToOneList = []
+
+        self.alpha = 1
+        self.beta = 1
+        self.rewardPerAgent = {} 
+        ##skip (21-05-06)    
+        #with open('/scratch/x2026a02/rcrs-server/boot/states1.json') as f:
+        #    self.states_for_pca = json.load(f)
+        #with open('/scratch/x2026a02/rcrs-server/boot/states2.json') as f:
+        #    self.states_for_pca.extend(json.load(f))
+        ##
+        #with open('/scratch/x2026a02/rcrs-server/boot/states3.json') as f:
+        #    self.states_for_pca.extend(json.load(f))
+        #self.minMaxScaler = MinMaxScaler().fit(self.states_for_pca)
+        #self.zeroToOneList = self.minMaxScaler.transform(self.states_for_pca)
+        #self.stateBuilder.fitkPcaModel(self.zeroToOneList)
+
+
+
+        try :
+            self.clientSocket.connect((HOST, PORT))
+            jsonStringList = self.recvMultiJsonStr()
+
+
+            #print(jsonStringList[1])
+
+            #print("-----------")
+            #print(jsonStringList[0])
+            #print("-----------")
+            #print(jsonStringList[1])
+            #print("-----------")
+            #print(jsonStringList[2])
+            #print("-----------")
+            #print(jsonStringList[3])
+            #print("-----------")
+            #jprint(jsonStringList[4])
+            #print("-----------")
+            #print(jsonStringList[5])
+            print("object number : " + str(len(jsonStringList))+ ".")
+            #print("building")
+            self.parser.addBuildings(jsonStringList[0], jsonStringList[2], "building")
+            #print("fire")
+            self.parser.addFirebrigades(jsonStringList[1], "firebridage")
+            for eId in self.parser.entityDictPerType['firebridage']:
+                self.rewardPerAgent[eId] = 0
+            #print(self.parser.entityDictPerType["building"])
+            
+            #print(len(self.parser.entityDictPerType["building"]))
+            #print(len(self.parser.entityDictPerType["firebridage"]))
+            #print("-----------")
+
+            self.actionspace = self.parser.entityDictPerType["building"]
+            #print("civil")
+            #self.parser.addEntitys(jsonStringList[2], "building")
+            #print("ambulance")
+            #self.parser.addEntitys(jsonStringList[3], "building")
+            #print("police")
+            #self.parser.addEntitys(jsonStringList[4], "building")
+            #print("road")
+            #self.parser.addEntitys(jsonStringList[5], "building")
+            #print(self.parser.getEntitys())
+            #print(road)
+            #waiting for start
+            #test = self.clientSocket.recv(BUFSIZE)
+
+
+
+            #print(test)
+        except Exception as e :
+            print(e)
+    def reset(self):
+        #state = self.minMaxScaler.transform(self.parser.getCumulativeChangeSetVectorList())
+        try :   
+            jsonStringList = self.recvMultiJsonStr()
+            print("object number : " + str(len(jsonStringList))+ ".")
+            self.parser.reset()  
+            self.parser.addBuildings(jsonStringList[0], jsonStringList[2], "building")
+            self.parser.addFirebrigades(jsonStringList[1], "firebridage")
+            for eId in self.parser.entityDictPerType['firebridage']:
+                self.rewardPerAgent[eId] = 0
+
+        except Exception as e :
+            print(e)              
+        #return self.stateBuilder.kPcaImagify(state, 83)
+
+    def recvJsonStr(self):
+        recv = ''
+        while True :
+            data = self.clientSocket.recv(BUFSIZE)
+            data_str = data.decode()
+            recv += data_str
+            if "$" in data_str :
+                break
+        return recv
+
+
+
+    def recvMultiJsonStr(self):
+        recv = ''
+        while True :
+            data = self.clientSocket.recv(BUFSIZE)
+            data_str = data.decode()
+            recv += data_str
+            if "@" in data_str :
+                break
+        recv = recv.split("@")[0]
+        recvList = recv.split("#")
+        resultList = []
+        for i in range(0, len(recvList)):
+            resultList.append(recvList[i])
+
+
+        return resultList
+
+    def sendJson(self, action):
+        #print('sendJson')
+        length = len(action)
+        # 데이터 사이즈를 little 엔디언 형식으로 byte로 변환한 다음 전송한다.
+        self.clientSocket.sendall(length.to_bytes(4, byteorder='little'))
+        # 데이터를 클라이언트로 전송한다.
+        self.clientSocket.sendall(action)
+
+
+    def step(self, action):
+        #print(action)
+        action = [{"building" : self.actionspace[action]}] 
+        action = json.dumps(action)
+        self.sendJson(action.encode())
+        #dict = self.recvJson()
+        stateandscoreinfo = self.recvJsonStr()
+        stateandscorelist = stateandscoreinfo.split("@")
+        #print(stateandscorelist)
+
+        changeSetStr = stateandscorelist[len(stateandscorelist)-3]
+        
+        #make reward set 
+        scoreMapStr = stateandscorelist[len(stateandscorelist)-2]
+        #dispatch set
+        dispatchMapStr = stateandscorelist[len(stateandscorelist)-1].split("$")[0]
+        #print(f"scoreMapStr {scoreMapStr}")
+        #print(f"dispatchMapStr {dispatchMapStr}")
+        scoreMap = json.loads(scoreMapStr)
+        #print(f"scoreMap {scoreMap}")
+        #currentSqrtBuildingDamage = scoreMap["--Sqrt(building damage)"]
+        #currentBuildingDamage = scoreMap["----Building damage"]
+        #currentAgentReward = scoreMap["agentreward"]
+        #현재 행위로 인해, 현재 스텝에서 증가한 화재 피해 정도.
+        #currentDiffSqrtBuildingDamage = self.previousSqrtBuildingDamage - currentSqrtBuildingDamage
+        #currentDiffBuildingDamage = self.previousBuildingDamage - currentBuildingDamage
+        #이전 스텝에서 증가했던 화재 피해와 비교 
+        #만약, 소방차의 행위가 화재를 억제했다면, 이전에 증가하는 화재 피해에 비해 덜 화재 피해가 증가할 것이다. ==> 긍정적 보상.
+        #만약, 소방차의 행위가 화재 피해를 억제하지 못한다면, 이전에 증가하는 화재 피해에 비해 더 화재 피해가 증가할 것이다. ==> 부정적 보상.
+        #sqrtReward = self.previousDiffSqrtBuildingDamage - currentDiffSqrtBuildingDamage
+        globalReward = scoreMap['rewards']['-1']
+        for key in self.rewardPerAgent.keys() :
+            if(key in scoreMap['rewards']):
+                self.rewardPerAgent[key] = self.alpha * scoreMap['rewards'][key] - self.beta * globalReward
+            else :
+                self.rewardPerAgent[key] =  - self.beta * globalReward
+
+
+        #reward =  self.previousDiffBuildingDamage - currentDiffBuildingDamage
+        #reward = -currentDiffBuildingDamage*10 + currentAgentReward
+        #reward = currentAgentReward
+
+        #if(reward + self.previousReward == 0):
+        #    reward = 0.0
+        
+        #보상이 계산됐다면, 현재의 빌딩 데미지 및 현재의 화재 피해 정도는 과거 스텝의 것이 된다.
+        #self.previousSqrtBuildingDamage = currentSqrtBuildingDamage
+        #self.previousBuildingDamage = currentBuildingDamage
+        #self.previousDiffSqrtBuildingDamage = currentDiffSqrtBuildingDamage
+        #self.previousDiffBuildingDamage = currentDiffBuildingDamage
+        #self.previousSqrtReward = sqrtReward
+        #self.previousReward = reward
+        #print("recv changeSet")
+        #print(changeSetStr)
+        state = self.parser.cumulativeParse(changeSetStr, dispatchMapStr)
+        print(state)
+        #state = self.stateBuilder.kPcaImagify(state, 83)
+        self.states.extend(copy.deepcopy(state))
+        #print(self.parser.getEntitys())
+        return state, self.rewardPerAgent    
+
+    def step_backup(self, action):
+        #print(action)
+        action = [{"building" : self.actionspace[action]}] 
+        action = json.dumps(action)
+        self.sendJson(action.encode())
+        #dict = self.recvJson()
+        stateandscoreinfo = self.recvJsonStr()
+        #print(stateandscoreinfo)
+        stateandscorelist = stateandscoreinfo.split("@")
+        #print(stateandscorelist)
+        
+        changeSetStr = stateandscorelist[len(stateandscorelist)-3]
+        
+        #make reward set 
+        scoreMapStr = stateandscorelist[len(stateandscorelist)-2]
+        #dispatch set
+        dispatchMapStr = stateandscorelist[len(stateandscorelist)-1]
+        #print(f"scoreMapStr {scoreMapStr}")
+
+        scoreMap = json.loads(scoreMapStr)
+        #print(f"scoreMap {scoreMap}")
+        #currentSqrtBuildingDamage = scoreMap["--Sqrt(building damage)"]
+        #currentBuildingDamage = scoreMap["----Building damage"]
+        currentAgentReward = scoreMap["agentreward"]
+        #현재 행위로 인해, 현재 스텝에서 증가한 화재 피해 정도.
+        #currentDiffSqrtBuildingDamage = self.previousSqrtBuildingDamage - currentSqrtBuildingDamage
+        #currentDiffBuildingDamage = self.previousBuildingDamage - currentBuildingDamage
+        #이전 스텝에서 증가했던 화재 피해와 비교 
+        #만약, 소방차의 행위가 화재를 억제했다면, 이전에 증가하는 화재 피해에 비해 덜 화재 피해가 증가할 것이다. ==> 긍정적 보상.
+        #만약, 소방차의 행위가 화재 피해를 억제하지 못한다면, 이전에 증가하는 화재 피해에 비해 더 화재 피해가 증가할 것이다. ==> 부정적 보상.
+        #sqrtReward = self.previousDiffSqrtBuildingDamage - currentDiffSqrtBuildingDamage
+
+        #reward =  self.previousDiffBuildingDamage - currentDiffBuildingDamage
+        #reward = -currentDiffBuildingDamage*10 + currentAgentReward
+        #reward = currentDiffBuildingDamage
+        reward = currentAgentReward
+        #if(reward + self.previousReward == 0):
+        #    reward = 0.0
+
+        #보상이 계산됐다면, 현재의 빌딩 데미지 및 현재의 화재 피해 정도는 과거 스텝의 것이 된다.
+        #self.previousSqrtBuildingDamage = currentSqrtBuildingDamage
+        #self.previousBuildingDamage = currentBuildingDamage
+        #self.previousDiffSqrtBuildingDamage = currentDiffSqrtBuildingDamage
+        #self.previousDiffBuildingDamage = currentDiffBuildingDamage
+        #self.previousSqrtReward = sqrtReward
+        #self.previousReward = reward
+        #print("recv changeSet")
+        #print(changeSetStr)
+        state = self.parser.cumulativeParse(changeSetStr)
+
+        #state = self.minMaxScaler.transform(state)
+        #print(state[0])
+        #add random agent selection process for building data for PCA model.
+
+
+        self.states.extend(copy.deepcopy(state))
+
+
+
+        #state = self.stateBuilder.kPcaImagify(state, 83)
+        #print(reward)        
+        #print(f"self.states {np.array(self.states).shape}")
+        #state = [[0]*83]*83
+        #state = self.stateBuilder.kPcaImagify(state, 83)
+        
+        #print(self.parser.getEntitys())
+        return copy.deepcopy(state), reward
+
+    def close(self):
+        self.clientSocket.close()
+
+if __name__ == "__main__":
+    env = RCRS_Env()
+    #env.action_space
+    
+    for i in range(800):
+        if((i%200 >= (200-1)) and (i > 0)):
+            env.reset() 
+        else :   
+            print(i) 
+            #print(f"env.actionspace {env.actionspace}")
+            randomactionsample =  random.randint(0, len(env.actionspace)-1)
+            #randomactionsample = 1
+
+            state, rewards = env.step(randomactionsample)
+            #if(i==100):
+            #    state = Image.fromarray(state, "L")
+            #    state.save("state.png")
+            #if(i==150):
+            #    state = Image.fromarray(state, "L")
+            #    state.save("state2.png")    
+    with open(f'/scratch/x2026a02/new_rcrs/rcrs-server/boot/states_sample_policy.json', 'w') as f:
+        json.dump(env.states, f)    
+    env.close()

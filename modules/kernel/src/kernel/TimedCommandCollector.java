@@ -23,6 +23,7 @@ public class TimedCommandCollector implements CommandCollector {
 
     @Override
     public Collection<Command> getAgentCommands(Collection<AgentProxy> agents, int timestep) throws InterruptedException {
+        long beforeTime = System.currentTimeMillis();
         long now = System.currentTimeMillis();
         long end = now + time;
         while (now < end) {
@@ -38,6 +39,9 @@ public class TimedCommandCollector implements CommandCollector {
         }
         Logger.trace(this + " returning " + result.size() + " commands");
         Logger.trace(this + " returning " + result);
+
+        long afterTime = System.currentTimeMillis();
+        System.out.println("execution time for compositecommandcollect getagentcommands : " + (afterTime-beforeTime));  
         return result;
     }
 

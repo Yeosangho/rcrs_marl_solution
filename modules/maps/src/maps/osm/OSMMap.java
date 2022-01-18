@@ -405,7 +405,7 @@ public class OSMMap {
         String key = tag.attributeValue("k");
         String value = tag.attributeValue("v");
         if ("building".equals(key)) {
-            return "yes".equals(value);
+            return "yes".equals(value) || "apartments".equals(value) || "house".equals(value) || "commercial".equals(value); 
         }
         if ("rcr:building".equals(key)) {
             return "1".equals(value);

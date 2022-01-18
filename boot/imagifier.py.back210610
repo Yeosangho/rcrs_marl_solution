@@ -1,0 +1,60 @@
+from sklearn.manifold import TSNE
+from sklearn.preprocessing import MinMaxScaler
+import numpy as np
+from sklearn.decomposition import PCA
+from sklearn.decomposition import KernelPCA
+
+class Imagifier:
+    def __init__(self):
+        self.pcaModel = None
+
+    def tsneImagify(self, vectorList, imageSize):
+        transformed = TSNE(n_components=3, random_state=0).fit_transform(vectorList)
+
+        return getImageArray(transformed, imageSize)
+
+    def fitPcaModel(self, vectorList):
+        self.pcaModel = PCA(n_components=3).fit(vectorList)
+    def fitkPcaModel(self, vectorList):
+        self.pcaModel = KernelPCA(n_components=3).fit(vectorList)
+
+    def pcaImagify(self, vectorList, imageSize):
+        if self.pcaModel == None:
+            raise Exception("No PCA Model!")
+
+        transformed = self.pcaModel.transform(vectorList)
+
+        return getImageArray(transformed, imageSize)
+
+    def kPcaImagify(self, vectorList, imageSize):
+        if self.pcaModel == None:
+            raise Exception("No PCA Model!")
+
+        transformed = self.pcaModel.transform(vectorList)
+
+        #return transformed
+        return getImageArray(transformed, imageSize)
+
+
+def getImageArray(threeDemensionVectorList, imageSize):
+    minMaxScaler = MinMaxScaler().fit(threeDemensionVectorList)
+    zeroToOneList = minMaxScaler.transform(threeDemensionVectorList)
+
+    imageGrayDict = {}
+
+    for i in range(0, len(zeroToOneList)):
+        imageX = int(imageSize*zeroToOneList[i][0])
+        imageY = int(imageSize*zeroToOneList[i][1])
+        grayValue = int(255*zeroToOneList[i][2])
+
+        imageGrayDict[(imageX, imageY)] = grayValue
+
+    imageArray = np.zeros((imageSize, imageSize), dtype=np.uint8)
+    for x in range(0, imageSize):
+        for y in range(0, imageSize):
+            gray = 0
+            if (x, y) in imageGrayDict:
+                gray = imageGrayDict[(x,y)]
+            imageArray[x][y] = gray
+
+    return imageArray

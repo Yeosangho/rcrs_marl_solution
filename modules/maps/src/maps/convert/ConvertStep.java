@@ -26,7 +26,7 @@ public abstract class ConvertStep {
         this.status = new JLabel();
         progress.setString("");
         progress.setStringPainted(true);
-        debug = new ShapeDebugFrame();
+        //debug = new ShapeDebugFrame();
     }
 
     /**
@@ -121,7 +121,7 @@ public abstract class ConvertStep {
     */
     public final void doStep() {
         try {
-            Logger.pushLogContext(getClass().getName());
+            //Logger.pushLogContext(getClass().getName());
             SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
                         progress.setIndeterminate(true);
@@ -134,10 +134,10 @@ public abstract class ConvertStep {
                         progress.setValue(progress.getMaximum());
                     }
                 });
-            debug.deactivate();
+            //debug.deactivate();
         }
         finally {
-            Logger.popLogContext();
+            //Logger.popLogContext();
         }
     }
 

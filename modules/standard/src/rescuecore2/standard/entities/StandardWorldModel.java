@@ -450,4 +450,5 @@ public class StandardWorldModel extends DefaultWorldModel<StandardEntity> {
       unindexedEntities.remove( e );
     }
   }
+
 }

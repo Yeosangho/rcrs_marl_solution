@@ -18,10 +18,10 @@ import java.util.Collection;
    A message for signalling a perception update for an agent.
  */
 public class KASense extends AbstractMessage implements Control {
-    private EntityIDComponent agentID;
-    private IntComponent time;
-    private ChangeSetComponent updates;
-    private CommandListComponent hear;
+    protected EntityIDComponent agentID;
+    protected IntComponent time;
+    protected ChangeSetComponent updates;
+    protected CommandListComponent hear;
 
     /**
        A KASense message that populates its data from a stream.
@@ -47,7 +47,17 @@ public class KASense extends AbstractMessage implements Control {
         this.updates.setChangeSet(changes);
         this.hear.setCommands(hear);
     }
-
+    protected KASense(Enum<?> urn) {
+        super(urn.toString());
+        agentID = new EntityIDComponent("Agent ID");
+        time = new IntComponent("Time");
+        updates = new ChangeSetComponent("Updates");
+        hear = new CommandListComponent("Hearing");
+        addMessageComponent(agentID);
+        addMessageComponent(time);
+        addMessageComponent(updates);
+        addMessageComponent(hear);    
+    } 
     private KASense() {
         super(ControlMessageURN.KA_SENSE);
         agentID = new EntityIDComponent("Agent ID");

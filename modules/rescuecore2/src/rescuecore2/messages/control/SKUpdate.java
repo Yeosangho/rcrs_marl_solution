@@ -13,9 +13,9 @@ import java.io.IOException;
    A message for sending updates from a simulator to the kernel.
  */
 public class SKUpdate extends AbstractMessage implements Control {
-    private IntComponent id;
-    private IntComponent time;
-    private ChangeSetComponent update;
+    protected IntComponent id;
+    protected IntComponent time;
+    protected ChangeSetComponent update;
 
     /**
        An SKUpdate message that populates its data from a stream.
@@ -39,8 +39,16 @@ public class SKUpdate extends AbstractMessage implements Control {
         this.time.setValue(time);
         this.update.setChangeSet(changes);
     }
-
-    private SKUpdate() {
+    protected SKUpdate(Enum<?> urn) {
+        super(urn.toString());
+        id = new IntComponent("ID");
+        time = new IntComponent("Time");
+        update = new ChangeSetComponent("Changes");
+        addMessageComponent(id);
+        addMessageComponent(time);
+        addMessageComponent(update);  
+    } 
+    protected SKUpdate() {
         super(ControlMessageURN.SK_UPDATE);
         id = new IntComponent("ID");
         time = new IntComponent("Time");

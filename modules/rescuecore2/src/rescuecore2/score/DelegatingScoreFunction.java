@@ -10,7 +10,7 @@ import rescuecore2.Timestep;
  */
 public abstract class DelegatingScoreFunction extends AbstractScoreFunction {
     /** The child score function. */
-    protected ScoreFunction child;
+    public ScoreFunction child;
 
     /**
        Create a DelegatingScoreFunction with a child function.

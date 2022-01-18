@@ -58,6 +58,7 @@ public class SampleCivilian extends AbstractSampleAgent<Civilian> {
   protected void postConnect() {
     super.postConnect();
     // model.indexClass(StandardEntityURN.REFUGE);
+    model.indexClass(StandardEntityURN.BUILDING, StandardEntityURN.REFUGE,StandardEntityURN.ROAD);
     helpProbability = config.getFloatValue( HELP_PROBABILITY_KEY,
         DEFAULT_HELP_PROBABILITY );
     ouchProbability = config.getFloatValue( OUCH_PROBABILITY_KEY,
@@ -67,7 +68,7 @@ public class SampleCivilian extends AbstractSampleAgent<Civilian> {
     LOG.info( "Civilian " + getID() + " connected" );
     Civilian me = me();
     // Remove all entities except me
-    model.removeAllEntities();
+    //model.removeAllEntities();
     model.addEntity( me );
   }
 
@@ -99,7 +100,53 @@ public class SampleCivilian extends AbstractSampleAgent<Civilian> {
     return result;
   }
 
+  @Override
+  protected void think(int time, ChangeSet changed, Collection<Command> heard, EntityID buildingID, String command){
+    // If we're not hurt or buried run for a refuge!
 
+    Civilian me = me();
+    // Remove all entities except me
+    //model.removeAllEntities();
+    //model.addEntity( me );
+    int damage = me.isDamageDefined() ? me.getDamage() : 0;
+    int hp = me.isHPDefined() ? me.getHP() : 0;
+    int buriedness = me.isBuriednessDefined() ? me.getBuriedness() : 0;
+    if ( hp <= 0 || hp < consciousThreshold ) {
+      // Unconscious (or dead): do nothing
+      LOG.info( "Unconscious or dead" );
+      sendRest( time );
+      return;
+    }
+    if ( damage > 0 && random.nextDouble() < ouchProbability ) {
+      LOG.info( "Shouting in pain" );
+      say( OUCH, time );
+    }
+    if ( buriedness > 0 && random.nextDouble() < helpProbability ) {
+      LOG.info( "Calling for help" );
+      say( HELP, time );
+    }
+
+    if ( damage == 0 && buriedness == 0 ) {
+      // Run for the refuge
+      List<EntityID> path = search
+          .breadthFirstSearchForCivilian( me().getPosition(), refugeIDs );
+      if ( path != null ) {
+        LOG.info( "Heading for a refuge" );
+        sendMove( time, path );
+        return;
+      } else {
+        LOG.info( "Moving to road" );
+        if ( model.getEntity( me().getPosition() ) instanceof Road )
+          sendRest( time );
+        else
+          sendMove( time, nearestRoad() );
+        return;
+      }
+    }
+    LOG.info(
+        "Not moving: damage = " + damage + ", buriedness = " + buriedness );
+    sendRest( time );  
+  }
   @Override
   protected void think( int time, ChangeSet changed,
       Collection<Command> heard ) {
@@ -107,8 +154,8 @@ public class SampleCivilian extends AbstractSampleAgent<Civilian> {
 
     Civilian me = me();
     // Remove all entities except me
-    model.removeAllEntities();
-    model.addEntity( me );
+    //model.removeAllEntities();
+    //model.addEntity( me );
     int damage = me.isDamageDefined() ? me.getDamage() : 0;
     int hp = me.isHPDefined() ? me.getHP() : 0;
     int buriedness = me.isBuriednessDefined() ? me.getBuriedness() : 0;
@@ -154,12 +201,13 @@ public class SampleCivilian extends AbstractSampleAgent<Civilian> {
     int maxPathLength = 20;
     List<EntityID> result = new ArrayList<EntityID>( maxPathLength );
     Set<EntityID> seen = new HashSet<EntityID>();
-    EntityID current = ( (Human) me() ).getPosition();
+    EntityID current = me().getPosition();
 
     for ( int i = 0; i < maxPathLength; ++i ) {
       result.add( current );
       seen.add( current );
       Area area = (Area) model.getEntity( current );
+      System.out.println(model.getAllEntities().size());
       if ( area instanceof Road ) break;
       if ( area == null ) {
         System.err.println( current + " is null??? " + me() );

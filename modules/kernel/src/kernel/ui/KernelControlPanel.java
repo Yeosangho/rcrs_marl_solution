@@ -44,6 +44,7 @@ public class KernelControlPanel extends JPanel {
     private Collection<JButton> controlButtons;
     private JButton stepButton;
     private JButton runButton;
+    private JButton resetButton;
 
     private volatile boolean running;
     private volatile boolean step;
@@ -73,6 +74,7 @@ public class KernelControlPanel extends JPanel {
         JButton removeViewer = new JButton("Remove viewer");
         stepButton = new JButton("Step");
         runButton = new JButton("Run");
+        resetButton = new JButton("Reset");
         add(addAgent);
         add(removeAgent);
         add(addSim);
@@ -81,6 +83,7 @@ public class KernelControlPanel extends JPanel {
         add(removeViewer);
         add(stepButton);
         add(runButton);
+        add(resetButton);
         controlButtons.add(addAgent);
         controlButtons.add(removeAgent);
         controlButtons.add(addSim);
@@ -127,6 +130,7 @@ public class KernelControlPanel extends JPanel {
                     runButtonPressed();
                 }
             });
+   
         runThread = new RunThread();
         running = false;
     }
@@ -265,7 +269,11 @@ public class KernelControlPanel extends JPanel {
 
     private boolean shouldStep() {
         synchronized (runLock) {
-            return running || step;
+            synchronized(componentManager.simLock){
+                return componentManager.getFireSimStarted();
+            }
+            //return running || step;
+            
         }
     }
 
@@ -284,8 +292,9 @@ public class KernelControlPanel extends JPanel {
     private class RunThread extends WorkerThread {
         @Override
         public boolean work() throws InterruptedException {
+            
             if (shouldStep()) {
-                if (!kernel.hasTerminated()) {
+                if ((!kernel.hasTerminated())) {
                     try {
                         kernel.timestep();
                     }
@@ -310,6 +319,7 @@ public class KernelControlPanel extends JPanel {
                 }
                 else {
                     kernel.shutdown();
+                    //kernel.reset();
                     disableAllButtons();
                     return false;
                 }

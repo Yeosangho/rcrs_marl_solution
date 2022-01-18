@@ -189,7 +189,11 @@ function startKernel {
     KERNEL_OPTIONS="-c $CONFIGDIR/kernel.cfg --gis.map.dir=$MAP --kernel.logname=$LOGDIR/rescue.log $GUI_OPTION $*"
     makeClasspath $BASEDIR/jars $BASEDIR/lib
 
-    execute kernel "java -Xmx2048m -cp $CP -Dlog4j.log.dir=$LOGDIR kernel.StartKernel $KERNEL_OPTIONS"
+    execute kernel "java -Xms512m -Xmx512m -cp $CP -Djava.awt.headless=true -Dlog4j.log.dir=$LOGDIR kernel.StartKernel $KERNEL_OPTIONS"
+    #execute kernel "java -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=logs -Xms512m -Xmx512m -cp $CP -Dlog4j.log.dir=$LOGDIR kernel.StartKernel $KERNEL_OPTIONS"
+    #execute kernel "java -Xms512m -Xmx512m -cp $CP -Dlog4j.log.dir=$LOGDIR kernel.StartKernel $KERNEL_OPTIONS"
+
+    
     # Wait for the kernel to start
     waitFor $LOGDIR/kernel.log "Listening for connections"
 }

@@ -5,6 +5,8 @@ import rescuecore2.messages.Message;
 import rescuecore2.messages.control.KSAfterShocksInfo;
 import rescuecore2.messages.control.KSCommands;
 import rescuecore2.worldmodel.ChangeSet;
+import rescuecore2.worldmodel.RewardSet;
+
 import rescuecore2.worldmodel.EntityID;
 import rescuecore2.worldmodel.WorldModelListener;
 import rescuecore2.worldmodel.WorldModel;
@@ -216,7 +218,45 @@ public class CollapseSimulator extends StandardSimulator implements
 			}
 		});
 	}
-
+    @Override
+    protected void processCommands(KSCommands c, ChangeSet changes, RewardSet rewards) {
+		long start = System.currentTimeMillis();
+		int time = c.getTime();
+		Logger.info("Timestep " + time);
+		if (gui != null) {
+			gui.timestep(time);
+		}
+		Collection<Building> collapsed = doCollapse(changes, time);
+		Map<Road, Collection<java.awt.geom.Area>> newBlock = doBlock(collapsed,
+				time);
+		// Create blockade objects
+		Map<Road, Collection<Blockade>> blockades = createBlockadeObjects(newBlock);
+		for (Map.Entry<Road, Collection<Blockade>> entry : blockades.entrySet()) {
+			Road r = entry.getKey();
+			List<EntityID> existing = r.getBlockades();
+			List<EntityID> ids = new ArrayList<EntityID>();
+			if (existing != null) {
+				ids.addAll(existing);
+			}
+			for (Blockade b : entry.getValue()) {
+				ids.add(b.getID());
+			}
+			r.setBlockades(ids);
+			changes.addAll(entry.getValue());
+			changes.addChange(r, r.getBlockadesProperty());
+		}
+		// If any roads have undefined blockades then set the blockades property
+		// to the empty list
+		for (Road next : roadCache) {
+			if (!next.isBlockadesDefined()) {
+				next.setBlockades(EMPTY_ID_LIST);
+				changes.addChange(next, next.getBlockadesProperty());
+			}
+		}
+		long end = System.currentTimeMillis();
+		Logger.info("Timestep " + time + " took " + (end - start) + " ms");	
+	
+	}
 	@Override
 	protected void processCommands(KSCommands c, ChangeSet changes) {
 		long start = System.currentTimeMillis();
