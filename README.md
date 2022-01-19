@@ -81,9 +81,8 @@
 
 * 파이썬 코드를 실행하면 자바프로세스를 같이 띄우고, 자바프로세스에서는 에피소드 별 스텝 수를 받아 스텝 수마다 시뮬레이션을 초기화함.   
   * RCRS 시뮬레이션에서 매 에피소드의 길이는 common.cfg의 episode.length를 통해 입력받고, 전체 시뮬레이션의 길이는 kernel.timestep에 의해 조정됨. 
-  
-'''
-~/.conda/envs/torch7/bin/python main.py --itr_before_train 33 --action_space 1 --alpha 1.0 --beta 0.01 --aux_reward 0.1 --scale_reward 0.01 --lr_scale 0.1 --out_activation 1.0 --final_beta=0.01 --init_beta 0.01 --file_prefix $SLURM_JOBID
 
-'''
+```
+~/.conda/envs/torch7/bin/python main.py --itr_before_train 33 --action_space 1 --alpha 1.0 --beta 0.01 --aux_reward 0.1 --scale_reward 0.01 --lr_scale 0.1 --out_activation 1.0 --final_beta=0.01 --init_beta 0.01 --file_prefix $SLURM_JOBID
+```
 
